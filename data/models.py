@@ -4,6 +4,9 @@ from pydantic import BaseModel, constr
 TUsername = constr(pattern='^\w{2,30}$')
 
 
+class User:
+    pass
+
 # class Role:
 #     ADMIN = 'admin'
 #     ORDINARY_USER = 'basic_user'
