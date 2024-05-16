@@ -14,47 +14,47 @@ _SEPARATOR = ';'
 #     return sha256(password.encode('utf-8')).hexdigest()
 
 
-def find_by_username(username: str) -> User | None:
+def find_by_email(email: str) -> User | None:
     data = read_query(
-        'SELECT id, username, password, email FROM users WHERE username = ?',
-        (username,))
+        'SELECT id, first_name, last_name, password, e-mail FROM users WHERE e-mail = ?',
+        (email,))
 
     return next((User.from_query_result(*row) for row in data), None)
 
 
-def try_login(username: str, password: str) -> User | None:
-    user = find_by_username(username)
+def try_login(email: str, password: str) -> User | None:
+    user = find_by_email(email)
 
     # password = _hash_password(password)
     return user if user and user.password == password else None
 
 
-def create(username: str, password: str, email: str) -> User | None:
+def create(first_name: str, last_name: str, password: str, email: str) -> User | None:
     # password = _hash_password(password)
     try:
         generated_id = insert_query(
-            'INSERT INTO users(username, password, email) VALUES (?,?,?)',
-            (username, password, email))
+            'INSERT INTO users(first_name, last_name, password, e-mail) VALUES (?,?,?,?)',
+            (first_name, last_name, password, email))
 
-        return User(id=generated_id, username=username, password='', email=email)
+        return User(id=generated_id, first_name=first_name, last_name=last_name, password='', email=email)
 
     except IntegrityError:
         # mariadb raises this error when a constraint is violated
-        # in that case we have duplicate usernames
+        # in that case we have duplicate emails
         return None
 
 
 def create_token(user: User) -> str:
-    # Define the payload for the JWT token
+    # Payload for the JWT token
     payload = {
         'id': user.id,
-        'username': user.username
+        'e-mail': user.email
     }
 
-    # Note: Replace 'your_secret_key' with a secure secret key
+    # Replace 'your_secret_key' with a secure secret key
     token = jwt.encode(payload, 'secret_key', algorithm='HS256')
 
-    return token.encode('utf-8')
+    return token
 
 
 def decode_token(token: str) -> dict:
@@ -63,11 +63,11 @@ def decode_token(token: str) -> dict:
     return payload
 
 
-def find_by_id_and_username(user_id: int, username: str) -> bool:
+def find_by_id_and_email(user_id: int, email: str) -> bool:
     try:
         # Execute a SELECT query to check if the user exists
-        query = "SELECT id FROM users WHERE id = ? AND username = ?"
-        result = read_query(query, (user_id, username))
+        query = "SELECT id FROM users WHERE id = ? AND e-mail = ?"
+        result = read_query(query, (user_id, email))
 
         return result is not None
 
@@ -81,9 +81,9 @@ def is_authenticated(token: str) -> bool:
         payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
 
         user_id = payload.get('id')
-        username = payload.get('username')
+        email = payload.get('e-mail')
 
-        user_exists = find_by_id_and_username(user_id, username, )
+        user_exists = find_by_id_and_email(user_id, email)
 
         return user_exists
 
@@ -101,21 +101,21 @@ def logged_in():
 
 
 def from_token(token: str) -> User | None:
-    username = token.split(_SEPARATOR)
+    email = token.split(_SEPARATOR)
 
-    return find_by_username(*username)
+    return find_by_email(*email)
 
 
-def name_exists(name: str):
-    data = read_query('SELECT COUNT(*) from users WHERE username = ?', (name,))
-    if data == [(0,)]:
-        return False
-
-    return True
+# def name_exists(name: str):
+#     data = read_query('SELECT COUNT(*) from users WHERE username = ?', (name,))
+#     if data == [(0,)]:
+#         return False
+#
+#     return True
 
 
 def email_exists(email: str):
-    data = read_query('SELECT COUNT(*) from users WHERE email = ?', (email,))
+    data = read_query('SELECT COUNT(*) from users WHERE e-mail = ?', (email,))
     if data == [(0,)]:
         return False
 
@@ -123,6 +123,6 @@ def email_exists(email: str):
 
 
 def give_user_info(user_id: int):
-    data = read_query('SELECT id, username, password, email FROM users WHERE id = ?', (user_id,))
+    data = read_query('SELECT id, first_name, last_name, e-mail FROM users WHERE id = ?', (user_id,))
 
     return [User.from_query_result(*row) for row in data]
