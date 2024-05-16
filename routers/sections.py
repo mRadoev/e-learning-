@@ -3,7 +3,7 @@ from data.models import Section
 
 section_router = APIRouter(prefix='/sections')
 
-
+#Teachers can access all sections they own (only?)
 #Students can only view sections that are from public courses or premium courses that they have access to
 #Guests cannot view sections
 @section_router.get('/')

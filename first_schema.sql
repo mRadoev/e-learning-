@@ -4,7 +4,6 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
-
 -- -----------------------------------------------------
 -- Schema e-learning
 -- -----------------------------------------------------
@@ -16,15 +15,16 @@ USE `e-learning` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e-learning`.`courses` (
   `course_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `title` INT(11) NOT NULL,
+  `title` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
   `objectives` VARCHAR(45) NOT NULL,
-  `owner(teacher)` VARCHAR(45) NOT NULL,
-  `tags` VARCHAR(45) NOT NULL,
+  `owner` INT NOT NULL,
+  `tags` TEXT NOT NULL,
   `status` TINYINT NOT NULL,
-  `student_rating` VARCHAR(45) NULL DEFAULT NULL,
+  `student_rating` INT NULL DEFAULT NULL,
   PRIMARY KEY (`course_id`),
-  UNIQUE INDEX `title_UNIQUE` (`title` ASC) )
+  UNIQUE INDEX `title_UNIQUE` (`title` ASC) ,
+  UNIQUE INDEX `course_id_UNIQUE` (`course_id` ASC) )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
@@ -83,10 +83,12 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`sections` (
   `course_id` INT(11) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
   `content` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(45) NULL DEFAULT NULL,
-  `link` VARCHAR(45) NULL DEFAULT NULL,
+  `description` TEXT NULL DEFAULT NULL,
+  `link` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`section_id`),
   INDEX `fk_section_courses1_idx` (`course_id` ASC) ,
+  UNIQUE INDEX `section_id_UNIQUE` (`section_id` ASC) ,
+  UNIQUE INDEX `title_UNIQUE` (`title` ASC) ,
   CONSTRAINT `fk_section_courses1`
     FOREIGN KEY (`course_id`)
     REFERENCES `e-learning`.`courses` (`course_id`)
