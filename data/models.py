@@ -5,6 +5,11 @@ from pydantic import BaseModel, constr
 TUsername = constr(pattern='^\w{2,30}$')
 
 
+class LoginData(BaseModel):
+    email: TUsername
+    password: str
+
+
 class Role:
     ADMIN = 'admin'
     TEACHER = 'teacher'
@@ -56,7 +61,7 @@ class Course(BaseModel):
         )
 
 
-class Sections(BaseModel):
+class Section(BaseModel):
     section_id: int
     course_id: int
     title: str
