@@ -21,7 +21,7 @@ def show_section_by_title(section_title, x_token: str = Header()):
     pass
 
 
-#Only teachers that own the course can create new sections for it
+#Only teachers that own the course can create new sections for it and update it
 @section_router.post('/new')
 def create_section(data: Section, x_token: str = Header()):
     pass

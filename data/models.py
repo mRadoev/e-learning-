@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, constr
 
-
 TUsername = constr(pattern='^\w{2,30}$')
 
 
@@ -25,6 +24,9 @@ class User(BaseModel):
     last_name: str
     password: str
     photo: None
+    phone_number: int | None
+    linkedin: str | None
+
     @classmethod
     def from_query_result(cls, user_id, role, email, first_name, last_name, password):
         return cls(
@@ -44,11 +46,12 @@ class Course(BaseModel):
     objectives: str
     owner: User
     tags: [str]
-    status: int
-    student_rating: int
+    status: int # 0 = public, 1 = premium
+    students_rating: int # The average of the sum of each student who gave the course a rating
+    #optional homepage picture
 
     @classmethod
-    def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, student_rating):
+    def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, students_rating):
         return cls(
             course_id=course_id,
             title=title,
@@ -57,7 +60,7 @@ class Course(BaseModel):
             owner=owner,
             tags=tags,
             status=status,
-            student_rating=student_rating
+            students_rating=students_rating
         )
 
 
