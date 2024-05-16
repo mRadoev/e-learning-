@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Response, status, HTTPException, Header, Query
-from data.models import Course
+from data.models import Course, Role
+from common.auth import get_user_or_raise_401
+from services import courses_services
+
 
 category_router = APIRouter(prefix='/courses')
 
@@ -8,7 +11,26 @@ category_router = APIRouter(prefix='/courses')
 #Guests can only view public courses
 @category_router.get('/')
 def show_courses(x_token: str = Header()):
-    pass
+    #Check if there is a logged user
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+    else:
+        logged_user = None
+
+    #Return all public courses and the courses which the logged user has access to
+    if not logged_user:
+        courses = courses_services.guest_view()
+        return courses
+    elif logged_user.role == Role.STUDENT:
+        courses = courses_services.student_view(logged_user.user_id)
+        return courses
+    elif logged_user.role == Role.ADMIN:
+        courses = courses_services.admin_view(logged_user.user_id)
+        return courses
+    elif logged_user.role == Role.TEACHER:
+        courses = courses_services.teacher_view(logged_user.user_id)
+        return courses
+
 
 
 #Only available to logged users
@@ -49,7 +71,7 @@ def update_course(data, x_token: str = Header()):
     pass
 
 
-#(only)Students can enroll in up to 5 premium courses and unlimited public courses
+#(only?)Students can enroll in up to 5 premium courses and unlimited public courses
 #Teachers should be able to approve enrollment requests and could be notified by email about the request
 @category_router.post('/enroll')
 def enroll_into_course(course_id: int = None, title: str = None, x_token: str = Header()):
