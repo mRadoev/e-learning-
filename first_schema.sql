@@ -18,14 +18,15 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`courses` (
   `title` VARCHAR(45) NOT NULL,
   `description` TEXT NOT NULL,
   `objectives` VARCHAR(45) NOT NULL,
-  `owner` INT NOT NULL,
+  `owner` INT(11) NOT NULL,
   `tags` TEXT NOT NULL,
-  `status` TINYINT NOT NULL,
-  `student_rating` INT NULL DEFAULT NULL,
+  `status` TINYINT(4) NOT NULL,
+  `student_rating` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`course_id`),
   UNIQUE INDEX `title_UNIQUE` (`title` ASC) ,
   UNIQUE INDEX `course_id_UNIQUE` (`course_id` ASC) )
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -35,7 +36,7 @@ DEFAULT CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS `e-learning`.`users` (
   `user_id` INT(11) NOT NULL AUTO_INCREMENT,
   `role` VARCHAR(45) NOT NULL,
-  `e-mail` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
   `linkedin` VARCHAR(45) NULL DEFAULT 'None',
@@ -44,8 +45,9 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`users` (
   `photo` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `id_UNIQUE` (`user_id` ASC) ,
-  UNIQUE INDEX `e-mail_UNIQUE` (`e-mail` ASC) )
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) )
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -86,15 +88,16 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`sections` (
   `description` TEXT NULL DEFAULT NULL,
   `link` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`section_id`),
-  INDEX `fk_section_courses1_idx` (`course_id` ASC) ,
   UNIQUE INDEX `section_id_UNIQUE` (`section_id` ASC) ,
   UNIQUE INDEX `title_UNIQUE` (`title` ASC) ,
+  INDEX `fk_section_courses1_idx` (`course_id` ASC) ,
   CONSTRAINT `fk_section_courses1`
     FOREIGN KEY (`course_id`)
     REFERENCES `e-learning`.`courses` (`course_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+AUTO_INCREMENT = 2
 DEFAULT CHARACTER SET = utf8;
 
 

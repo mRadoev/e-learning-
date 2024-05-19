@@ -115,14 +115,14 @@ def from_token(token: str) -> User | None:
 
 
 def email_exists(email: str):
-    data = read_query('SELECT COUNT(*) from users WHERE e-mail = ?', (email,))
-    if data == [(0,)]:
-        return False
+    data = read_query('SELECT email FROM users WHERE email = ?', (email,))
+    if data:
+        return True
 
-    return True
+    return False
 
 
 def give_user_info(user_id: int):
-    data = read_query('SELECT id, first_name, last_name, e-mail FROM users WHERE id = ?', (user_id,))
+    data = read_query('SELECT id, first_name, last_name, email FROM users WHERE id = ?', (user_id,))
 
     return [User.from_query_result(*row) for row in data]

@@ -1,13 +1,12 @@
 from datetime import datetime
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, Field
+from typing import List, Optional
 
-TUsername = constr(pattern='^\w{2,30}$')
-
+TUsername = constr(pattern=r'^\w{2,30}$')
 
 class LoginData(BaseModel):
     email: TUsername
     password: str
-
 
 class Role:
     ADMIN = 'admin'
@@ -15,17 +14,16 @@ class Role:
     STUDENT = 'student'
     GUEST = 'guest'
 
-
 class User(BaseModel):
-    user_id: int
-    role: Role = None
+    user_id: int | None = None
+    role: str = Field(..., pattern=r'^(admin|teacher|student|guest)$')  # Ensure the role is one of the valid strings
     email: str
     first_name: str
     last_name: str
     password: str
-    photo: None
-    phone_number: int | None
-    linkedin: str | None
+    photo: Optional[None] = None
+    phone_number: Optional[str] = None
+    linkedin: Optional[str] = None
 
     @classmethod
     def from_query_result(cls, user_id, role, email, first_name, last_name, password):
@@ -38,6 +36,8 @@ class User(BaseModel):
             password=password
         )
 
+    class Config:
+        arbitrary_types_allowed = True
 
 class Course(BaseModel):
     course_id: int
@@ -45,10 +45,9 @@ class Course(BaseModel):
     description: str
     objectives: str
     owner: User
-    tags: [str]
-    status: int # 0 = public, 1 = premium
-    students_rating: int # The average of the sum of each student who gave the course a rating
-    #optional homepage picture
+    tags: List[str]
+    status: int  # 0 = public, 1 = premium
+    students_rating: int  # The average of the sum of each student who gave the course a rating
 
     @classmethod
     def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, students_rating):
@@ -63,6 +62,8 @@ class Course(BaseModel):
             students_rating=students_rating
         )
 
+    class Config:
+        arbitrary_types_allowed = True
 
 class Section(BaseModel):
     section_id: int
@@ -83,10 +84,5 @@ class Section(BaseModel):
             link=link
         )
 
-
-class CourseHasUsers(BaseModel):
-    course_id: int
-    user_id: int
-    has_control: int
-    has_access: int
-    student_rating: int
+    class Config:
+        arbitrary_types_allowed = True
