@@ -1,5 +1,6 @@
 from data.database import insert_query, read_query
 from data.models import User
+from typing import Optional
 from mariadb import IntegrityError
 import mariadb
 import jwt
@@ -126,3 +127,13 @@ def give_user_info(user_id: int):
     data = read_query('SELECT id, first_name, last_name, email FROM users WHERE id = ?', (user_id,))
 
     return [User.from_query_result(*row) for row in data]
+
+
+def get_user_role_from_token(token: str) -> Optional[str]:
+    try:
+        payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
+        user_role = payload.get('role')
+        return user_role
+    except jwt.InvalidTokenError:
+        print("Invalid token")
+        return None

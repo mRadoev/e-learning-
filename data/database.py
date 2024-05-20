@@ -8,7 +8,7 @@ def _get_connection() -> Connection:
         password='1234',
         host='localhost',
         port=3306,
-        database='webapp'
+        database='e-learning'
     )
 
 
@@ -36,3 +36,12 @@ def update_query(sql: str, sql_params=()) -> bool:
         conn.commit()
 
         return cursor.rowcount
+
+
+def delete_query(sql: str, sql_params=()) -> bool:
+    with _get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql, sql_params)
+        conn.commit()
+
+        return True

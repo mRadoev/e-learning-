@@ -4,15 +4,18 @@ from typing import List, Optional
 
 TUsername = constr(pattern=r'^\w{2,30}$')
 
+
 class LoginData(BaseModel):
     email: TUsername
     password: str
+
 
 class Role:
     ADMIN = 'admin'
     TEACHER = 'teacher'
     STUDENT = 'student'
     GUEST = 'guest'
+
 
 class User(BaseModel):
     user_id: int | None = None
@@ -38,6 +41,7 @@ class User(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
 
 class Course(BaseModel):
     course_id: int
@@ -65,6 +69,7 @@ class Course(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+
 class Section(BaseModel):
     section_id: int
     course_id: int
@@ -86,3 +91,22 @@ class Section(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+# class Message(BaseModel):
+#     message_id: int | None = None
+#     sender_email: str
+#     recipient_email: str
+#     message_text: str
+#
+#     @classmethod
+#     def from_query_result(cls, message_id, sender_email, recipient_email, message_text):
+#         return cls(
+#             message_id=message_id,
+#             sender_email=sender_email,
+#             recipient_email=recipient_email,
+#             message_text=message_text)
+#
+#
+# class MessagePayload(BaseModel):
+#     recipient_email: str
+#     message_text: str
