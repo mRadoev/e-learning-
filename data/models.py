@@ -6,7 +6,7 @@ TUsername = constr(pattern=r'^\w{2,30}$')
 
 
 class LoginData(BaseModel):
-    email: TUsername
+    email: str
     password: str
 
 
@@ -51,10 +51,10 @@ class Course(BaseModel):
     owner: User
     tags: List[str]
     status: int  # 0 = public, 1 = premium
-    students_rating: int  # The average of the sum of each student who gave the course a rating
+    student_rating: int  # The average of the sum of each student who gave the course a rating
 
     @classmethod
-    def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, students_rating):
+    def from_query_result(cls, course_id, title, description, objectives, owner, tags, student_rating):
         return cls(
             course_id=course_id,
             title=title,
@@ -62,8 +62,7 @@ class Course(BaseModel):
             objectives=objectives,
             owner=owner,
             tags=tags,
-            status=status,
-            students_rating=students_rating
+            student_rating=student_rating
         )
 
     class Config:

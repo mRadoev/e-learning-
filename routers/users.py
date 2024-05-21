@@ -44,7 +44,7 @@ def registration(data: User):
     if email_exists(data.email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    user = create(data.first_name, data.last_name, data.password, data.email)
+    user = create(data.role, data.first_name, data.last_name, data.password, data.email)
     if user:
         return {"message": "User registered successfully"}
     else:

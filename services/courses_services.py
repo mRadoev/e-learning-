@@ -16,15 +16,15 @@ def find_sender_id(x_token: str = Header(...)) -> int:
 
 
 def guest_view():
-    data = read_query('SELECT course_id, title, description, objectives, owner, tags, student_rating'
-                      'FROM courses c WHERE c.status = 0')
-    return data
+    data = read_query('SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.student_rating '
+                      'FROM courses AS c WHERE c.status = 0')
+    return next((Course.from_query_result(*row) for row in data), None)
 
 
 def student_view(student_id: int):
-    data = read_query('SELECT course_id, title, description, objectives, owner, tags, student_rating'
+    data = read_query('SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.student_rating '
                       'FROM courses c WHERE c.status = 0')
-    pass
+    return next((Course.from_query_result(*row) for row in data), None)
 
 
 def admin_view(user):
