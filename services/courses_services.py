@@ -19,7 +19,7 @@ def find_sender_id(x_token: str = Header(...)) -> int:
 def guest_view():
     data = read_query('SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.student_rating '
                       'FROM courses AS c WHERE c.status = 0')
-    return next((Course.from_query_result(*row) for row in data), None)
+    return [Course.from_query_result(*row) for row in data]
 
 
 def student_view(user_id: int):

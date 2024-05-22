@@ -48,10 +48,10 @@ class Course(BaseModel):
     title: str
     description: str
     objectives: str
-    owner: User
-    tags: List[str]
-    status: int  # 0 = public, 1 = premium
-    student_rating: int  # The average of the sum of each student who gave the course a rating
+    owner: int
+    tags: str
+    status: int = 0  # 0 = public, 1 = premium
+    student_rating: int | None = None  # The average of the sum of each student who gave the course a rating
 
     @classmethod
     def from_query_result(cls, course_id, title, description, objectives, owner, tags, student_rating):

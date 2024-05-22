@@ -12,7 +12,7 @@ courses_router = APIRouter(prefix='/courses')
 
 
 @courses_router.get('/')
-def show_courses(x_token: str = Header()):
+def show_courses(x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
