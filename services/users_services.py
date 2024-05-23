@@ -51,7 +51,11 @@ def create_token(user: User) -> str:
     # Payload for the JWT token
     payload = {
         'user_id': user.user_id,
-        'email': user.email
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'role': user.role,
+        'password': user.password
     }
 
     # Replace 'your_secret_key' with a secure secret key
@@ -103,13 +107,18 @@ def logged_in():
 def from_token(token: str) -> User:
     payload = decode_token(token)
     user_id = payload.get("user_id")
+    first_name = payload.get("first_name")
+    last_name = payload.get("last_name")
     role = payload.get("role")
     email = payload.get("email")
+    password = payload.get("password")
+
+    user = User(user_id=user_id, first_name=first_name, last_name=last_name, role=role, email=email, password=password)
 
     if user_id is None or role is None or email is None:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    return User(user_id=user_id, role=role, email=email)
+    return user
 
 
 # def name_exists(name: str):

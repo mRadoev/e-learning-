@@ -5,6 +5,7 @@ INSERT INTO `e-learning`.`courses` (`title`,`description`,`objectives`,`owner`,`
 INSERT INTO `e-learning`.`courses` (`title`,`description`,`objectives`,`owner`,`tags`,`status`) VALUES ('Literature ', 'First steps in the world of literature', 'Get to know famous authors and their work', 4, 'literature, authors, books', 0);
 
 -- --Users examples for testing
+INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('admin','example10@asd.com','admin','admin', 'admin');
 INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('student','example1@asd.com','Goro','Boro', '1234');
 INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('teacher','example2@asd.com','Ara','Mara', '1234');
 INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('student', 'example3@asd.com', 'Georgi', 'Georgiev', 'password123');

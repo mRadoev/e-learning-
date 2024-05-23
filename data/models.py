@@ -47,14 +47,36 @@ class Course(BaseModel):
     course_id: int
     title: str
     description: str
-    objectives: str
-    owner: int
+    objectives: str = None
+    owner: int = None
     tags: str
     status: int = 0  # 0 = public, 1 = premium
     student_rating: int | None = None  # The average of the sum of each student who gave the course a rating
 
+    def to_guest_dict(self):
+        return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
+
+    def to_student_dict(self):
+        return self.dict(include={'course_id', 'title', 'description', 'objectives', 'owner', 'tags', 'student_rating'})
+
+    def to_teacher_dict(self):
+        return self.dict(
+            include={'course_id', 'title', 'description', 'objectives', 'owner', 'tags', 'status', 'student_rating'})
+
+    # @classmethod
+    # def from_query_result(cls, course_id, title, description, objectives, owner, tags, student_rating):
+    #     return cls(
+    #         course_id=course_id,
+    #         title=title,
+    #         description=description,
+    #         objectives=objectives,
+    #         owner=owner,
+    #         tags=tags,
+    #         student_rating=student_rating
+    #     )
+
     @classmethod
-    def from_query_result(cls, course_id, title, description, objectives, owner, tags, student_rating):
+    def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, student_rating):
         return cls(
             course_id=course_id,
             title=title,
@@ -62,8 +84,19 @@ class Course(BaseModel):
             objectives=objectives,
             owner=owner,
             tags=tags,
+            status=status,
             student_rating=student_rating
         )
+
+    # @classmethod
+    # def from_query_guest(cls, course_id, title, description, tags, student_rating):
+    #     return cls(
+    #         course_id=course_id,
+    #         title=title,
+    #         description=description,
+    #         tags=tags,
+    #         student_rating=student_rating
+    #     )
 
     class Config:
         arbitrary_types_allowed = True

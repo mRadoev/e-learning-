@@ -31,7 +31,7 @@ def show_courses(x_token: Optional[str] = Header(None)):
     elif logged_user.role == Role.TEACHER:
         courses = courses_services.teacher_view(logged_user.user_id)
     else:
-        courses = []
+        return "There are no courses you can view!"
 
     return courses
 
