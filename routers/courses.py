@@ -19,6 +19,8 @@ def show_courses(x_token: Optional[str] = Header(None)):
     else:
         logged_user = None
 
+    # logged_user.role = get_user_role_from_token(x_token)
+
     # all public courses and the courses which the logged user has access to
     if not logged_user:
         courses = courses_services.guest_view()
