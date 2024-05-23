@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, HTTPException, Header
 from data.models import Course, Role
 from common.auth import get_user_or_raise_401
+from typing import Optional
 from services import courses_services
 
 
@@ -12,25 +13,25 @@ courses_router = APIRouter(prefix='/courses')
 
 
 @courses_router.get('/')
-def show_courses(x_token: str = Header(None)):
+def show_courses(x_token: Optional[str] = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
         logged_user = None
 
-    # Return all public courses and the courses which the logged user has access to
+    # all public courses and the courses which the logged user has access to
     if not logged_user:
         courses = courses_services.guest_view()
-        return courses
     elif logged_user.role == Role.STUDENT:
         courses = courses_services.student_view(logged_user.user_id)
-        return courses
     elif logged_user.role == Role.ADMIN:
         courses = courses_services.admin_view(logged_user.user_id)
-        return courses
     elif logged_user.role == Role.TEACHER:
         courses = courses_services.teacher_view(logged_user.user_id)
-        return courses
+    else:
+        courses = []
+
+    return courses
 
 
 # Only available to logged users

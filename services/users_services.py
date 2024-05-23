@@ -2,12 +2,12 @@ from data.database import insert_query, read_query
 from data.models import User
 from typing import Optional
 from mariadb import IntegrityError
+from fastapi import HTTPException
 import mariadb
 import jwt
 from flask import session
 
-_SEPARATOR = ';'
-
+# _SEPARATOR = ';'
 
 # passwords should be secured as hashstrings in DB
 # def _hash_password(password: str):
@@ -86,16 +86,13 @@ def is_authenticated(token: str) -> bool:
         user_id = payload.get('user_id')
         email = payload.get('email')
 
-        user_exists = find_by_id_and_email(user_id, email)
+        user_exists = find_by_id_and_email(user_id, email)  # check if user exists
 
         return user_exists
 
     except jwt.ExpiredSignatureError:
-        # token expiration error
         return False
-
     except jwt.InvalidTokenError:
-        # invalid token error
         return False
 
 
@@ -103,10 +100,16 @@ def logged_in():
     return 'user_id' in session
 
 
-def from_token(token: str) -> User | None:
-    email = token.split(_SEPARATOR)
+def from_token(token: str) -> User:
+    payload = decode_token(token)
+    user_id = payload.get("user_id")
+    role = payload.get("role")
+    email = payload.get("email")
 
-    return find_by_email(*email)
+    if user_id is None or role is None or email is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    return User(user_id=user_id, role=role, email=email)
 
 
 # def name_exists(name: str):
