@@ -5,6 +5,13 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema e-learning
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
 -- Schema e-learning
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `e-learning` DEFAULT CHARACTER SET utf8 ;
@@ -26,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`courses` (
   UNIQUE INDEX `title_UNIQUE` (`title` ASC) ,
   UNIQUE INDEX `course_id_UNIQUE` (`course_id` ASC) )
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -47,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`users` (
   UNIQUE INDEX `id_UNIQUE` (`user_id` ASC) ,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) )
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 9
 DEFAULT CHARACTER SET = utf8;
 
 
@@ -81,8 +88,8 @@ DEFAULT CHARACTER SET = utf8;
 -- Table `e-learning`.`sections`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e-learning`.`sections` (
-  `section_id` INT(11) NOT NULL AUTO_INCREMENT,
   `course_id` INT(11) NOT NULL,
+  `section_id` INT(11) NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(45) NOT NULL,
   `content` VARCHAR(45) NOT NULL,
   `description` TEXT NULL DEFAULT NULL,
@@ -97,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`sections` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 2
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8;
 
 
