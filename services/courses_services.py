@@ -72,10 +72,7 @@ def admin_view(user):
 #     return course
 
 
-def create_course(course: Course, user_role: str) -> Course:
-    if user_role != "teacher":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
-
+def create_course(course: Course) -> Course:
     generated_id = insert_query(
         'INSERT INTO courses(title, description, objectives, owner, tags, status, students_rating) VALUES (?, ?, ?, ?, ?, ?, ?)',
         (course.title, course.description, course.objectives, course.owner, ','.join(course.tags), course.status,
@@ -90,42 +87,37 @@ def delete_course(course_id: int, title: str, token: str):
     user_role = get_user_role_from_token(token)
     user_id = auth.get_user_or_raise_401(token).user_id
 
-    if user_role != "teacher" or "admin":
+    if user_role != ("teacher" or "admin"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can delete courses")
 
     if course_id is not None and user_role == "admin":
-        delete = "DELETE FROM courses WHERE course_id = ?"
-        delete_params = (course_id,)
+        delete_query(f"DELETE FROM courses WHERE course_id = {course_id}")
     elif title is not None and user_role == "admin":
-        delete = "DELETE FROM courses WHERE title = ?"
-        delete_params = (title,)
-
+        delete_query(f"DELETE FROM courses WHERE title = {title}")
 
     # elif title is not None and user_role == "teacher":
     #pass
 
     elif course_id is not None and user_role == "teacher":
-        delete_query(''' DELETE cu
+        if delete_query(''' DELETE cu
                             FROM courses_has_users cu
                             JOIN courses c ON cu.course_id = c.course_id
                             WHERE cu.course_id = ? AND cu.has_control = 1 AND cu.user_id = ?;
-                            
-                            DELETE cu
-                            FROM courses_has_users cu
-                            WHERE cu.course_id = ?;
-                            
-                            DELETE s
-                            FROM sections s
-                            WHERE s.course_id = ?;
-                            
-                            DELETE courses
-                            FROM courses
-                            WHERE courses.course_id = ?;''',
-                     (course_id, user_id, course_id, course_id, course_id))
-        return "Course deleted successfully!"
+                            ''', (course_id, user_id)):
+            delete_query('''DELETE cu
+                                FROM courses_has_users cu
+                                WHERE cu.course_id = ?;
+                                
+                                DELETE s
+                                FROM sections s
+                                WHERE s.course_id = ?;
+                                
+                                DELETE courses
+                                FROM courses
+                                WHERE courses.course_id = ?;''',
+                         (course_id, course_id, course_id))
+            return "Course deleted successfully!"
 
     else:
         raise ValueError("Provide either course_id or title to delete a course")
-    success = delete_query(delete, delete_params)
-    if success:
-        return "Course deleted successfully"
+    return "Course NOT deleted successfully"

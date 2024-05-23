@@ -63,17 +63,6 @@ class Course(BaseModel):
         return self.dict(
             include={'course_id', 'title', 'description', 'objectives', 'owner', 'tags', 'status', 'student_rating'})
 
-    # @classmethod
-    # def from_query_result(cls, course_id, title, description, objectives, owner, tags, student_rating):
-    #     return cls(
-    #         course_id=course_id,
-    #         title=title,
-    #         description=description,
-    #         objectives=objectives,
-    #         owner=owner,
-    #         tags=tags,
-    #         student_rating=student_rating
-    #     )
 
     @classmethod
     def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, student_rating):
@@ -88,33 +77,24 @@ class Course(BaseModel):
             student_rating=student_rating
         )
 
-    # @classmethod
-    # def from_query_guest(cls, course_id, title, description, tags, student_rating):
-    #     return cls(
-    #         course_id=course_id,
-    #         title=title,
-    #         description=description,
-    #         tags=tags,
-    #         student_rating=student_rating
-    #     )
 
     class Config:
         arbitrary_types_allowed = True
 
 
 class Section(BaseModel):
-    section_id: int
     course_id: int
+    section_id: int
     title: str
     content: str
-    description: str
-    link: str
+    description: str | None = None
+    link: str | None = None
 
     @classmethod
-    def from_query_result(cls, section_id, course_id, title, content, description, link):
+    def from_query_result(cls, course_id, section_id, title, content, description, link):
         return cls(
-            section_id=section_id,
             course_id=course_id,
+            section_id=section_id,
             title=title,
             content=content,
             description=description,

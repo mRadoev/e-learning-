@@ -79,15 +79,26 @@ def create_course(course_data: Course, x_token: str = Header(None)):
     user_id = courses_services.find_sender_id(x_token)
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token or user not found")
-
+######### May be optimized
     user_role = courses_services.get_user_role_from_token(x_token)
-    new_course = courses_services.create_course(course_data, user_role)
+
+    if user_role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
+    new_course = courses_services.create_course(course_data)
     return new_course
 
 
+########To optimize and fix
 @courses_router.delete('/delete')
-def delete_course(course_id: int = None, title: str = None, x_token: str = Header()):
-    result = delete_course(course_id, title, x_token)
+def delete_course(data, x_token: str = Header()):
+    # user = get_user_or_raise_401(x_token)
+    # if user.role == "admin":
+    #     pass
+    # if user.role == "teacher":
+    #     pass
+    if data.course_id:
+        course_id = data.course_id
+    result = courses_services.delete_course(data.course_id, data.title, x_token)
     return result
 
 
