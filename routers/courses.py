@@ -3,6 +3,7 @@ from data.models import Course, Role
 from common.auth import get_user_or_raise_401
 from typing import Optional
 from services import courses_services
+from services.users_services import decode_token, get_user_role_from_token
 
 
 courses_router = APIRouter(prefix='/courses')
@@ -37,27 +38,26 @@ def show_courses(x_token: Optional[str] = Header(None)):
 
 
 # Only available to logged users
-# @courses_router.get('/id/{course_id}')
-# def get_course_by_id(course_id: int, x_token: str = Header(...)):
-#     if not x_token:
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization token is required")
-#
-#     # Decode the token
-#     user_data = decode_token(x_token)
-#     user_id = user_data.get('user_id')
-#     user_role = user_data.get('user_role')
-#
-#     if not user_id:
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-#
-#     course = show_course_by_id(course_id, user_role, user_id)
-#     return course
+@courses_router.get('/id/{course_id}')
+def get_course_by_id(course_id: int, x_token: str = Header(None)):
+    # Decode the token
+    user = get_user_or_raise_401(x_token)
+    user_id = user.user_id
+    user_role = user.role
+
+    course = courses_services.show_course_by_id(course_id, user_role, user_id)
+    return course
 
 # Only available to logged users
-@courses_router.get('/title/{course_title}')
-def show_course_by_title(course_title: str, x_token: str = Header(...)) -> Course:
-    pass
+# BY TITLE may be not necessary?
+# @courses_router.get('/title/{course_title}')
+# def show_course_by_title(course_title: str, x_token: str = Header(...)) -> Course:
+#     pass
 
+@courses_router.get('/any')
+def experiment(data: dict):
+    course_id = data.get('course_id')
+    return courses_services.grab_any_course_by_id(course_id)
 
 # Available to guests
 @courses_router.get('/tag/{tag}')
@@ -76,12 +76,14 @@ def show_courses_by_rating(rating, x_token: str = Header()):
 def create_course(course_data: Course, x_token: str = Header(None)):
     if x_token is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
-    user_id = courses_services.find_sender_id(x_token)
+    user = decode_token(x_token)
+    # user_id = courses_services.find_sender_id(x_token)
+    user_id = user.get('id')
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token or user not found")
 ######### May be optimized
-    user_role = courses_services.get_user_role_from_token(x_token)
-
+    user_role = user.get('role')
+    #user_role = courses_services.get_user_role_from_token(x_token)
     if user_role != "teacher":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
     new_course = courses_services.create_course(course_data)

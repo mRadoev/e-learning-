@@ -51,7 +51,7 @@ class Course(BaseModel):
     owner: int = None
     tags: str
     status: int = 0  # 0 = public, 1 = premium
-    student_rating: int | None = None  # The average of the sum of each student who gave the course a rating
+    student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
@@ -74,7 +74,7 @@ class Course(BaseModel):
             owner=owner,
             tags=tags,
             status=status,
-            student_rating=student_rating
+            student_rating="Not yet rated" if (student_rating is None) else student_rating
         )
 
 

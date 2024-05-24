@@ -14,6 +14,12 @@ from flask import session
 #     from hashlib import sha256
 #     return sha256(password.encode('utf-8')).hexdigest()
 
+def find_by_id(user_id: int) -> User | None:
+    data = read_query(
+        'SELECT user_id, role, email, first_name, last_name, password FROM users WHERE user_id = ?',
+        (user_id,))
+
+    return next((User.from_query_result(*row) for row in data), None)
 
 def find_by_email(email: str) -> User | None:
     data = read_query(
@@ -66,7 +72,6 @@ def create_token(user: User) -> str:
 
 def decode_token(token: str) -> dict:
     payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
-
     return payload
 
 
@@ -114,11 +119,14 @@ def from_token(token: str) -> User:
     password = payload.get("password")
 
     user = User(user_id=user_id, first_name=first_name, last_name=last_name, role=role, email=email, password=password)
+    #?Need to encrypt the password with token.
+    #!Check if password is correct when token checks email and id
+    user_exists = find_by_id_and_email(user_id, email)
+    if user_exists:
+        if user_id is None or role is None or email is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
 
-    if user_id is None or role is None or email is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    return user
+        return user
 
 
 # def name_exists(name: str):
