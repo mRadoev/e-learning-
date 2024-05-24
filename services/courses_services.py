@@ -66,7 +66,15 @@ def show_course_by_id(course_id: int, user_role: str, user_id: int) -> Course:
         data = read_query(f'''SELECT * 
                             FROM courses c
                             WHERE c.status = 0 AND c.course_id = {course_id};''')
-        return data
+        shown_course = next((Course.from_query_result(*row) for row in data), None)
+        return shown_course.to_guest_dict()
+
+    def by_id_for_non_guest(course_id):
+        data = read_query(f'''SELECT * 
+                            FROM courses c
+                            WHERE c.status = 0 AND c.course_id = {course_id};''')
+        shown_course = next((Course.from_query_result(*row) for row in data), None)
+        return shown_course.to_guest_dict()
 
     def by_id_for_student(student_id, course_id):
         data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
@@ -74,7 +82,7 @@ def show_course_by_id(course_id: int, user_role: str, user_id: int) -> Course:
                             JOIN courses_has_users cu ON cu.course_id = c.course_id
                             WHERE c.status = 1 AND cu.has_access = 1 AND c.course_id = {course_id} AND cu.user_id = {student_id};''')
         shown_course = next((Course.from_query_result(*row) for row in data), None)
-        return shown_course
+        return shown_course.to_student_dict()
 
     def by_id_for_teacher(teacher_id, course_id):
         data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating 
@@ -82,10 +90,12 @@ def show_course_by_id(course_id: int, user_role: str, user_id: int) -> Course:
                             JOIN courses_has_users cu ON cu.course_id = c.course_id
                             WHERE c.status = 1 AND cu.has_control = 1 AND c.course_id = {course_id} AND cu.user_id = {teacher_id};''')
         shown_course = next((Course.from_query_result(*row) for row in data), None)
-        return shown_course
+        return shown_course.to_teacher_dict()
 
-    if course.status == 0:
+    if course.status == 0 and user_role == 'guest':
         return by_id_for_guest(course_id)
+    if course.status == 0 and user_role != 'guest':
+        return by_id_for_non_guest(course_id)
     elif user_role == 'student' and course.status == 1:
         course_to_show = by_id_for_student(user_id, course_id)
         return course_to_show
