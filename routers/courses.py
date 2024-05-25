@@ -44,9 +44,23 @@ def get_course_by_id(course_id: int, x_token: str = Header(None)):
     user = get_user_or_raise_401(x_token)
     user_id = user.user_id
     user_role = user.role
+    check_course = courses_services.grab_any_course_by_id(course_id)
 
-    course = courses_services.show_course_by_id(course_id, user_role, user_id)
-    return course
+    if check_course.status == 0 and user_role == 'guest':
+        return courses_services.by_id_for_guest(course_id)
+    if check_course.status == 0 and user_role != 'guest':
+        return courses_services.by_id_for_non_guest(course_id)
+    elif user_role == 'student' and check_course.status == 1:
+        course_to_show = courses_services.by_id_for_student(user_id, course_id)
+        return course_to_show
+    elif user_role == 'teacher' and check_course.status == 1:
+        course_to_show = courses_services.by_id_for_teacher(user_id, course_id)
+        return course_to_show
+    elif user_role == 'admin':
+        return check_course
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
 
 # Only available to logged users
 # BY TITLE may be not necessary?
@@ -76,15 +90,8 @@ def show_courses_by_rating(rating, x_token: str = Header()):
 def create_course(course_data: Course, x_token: str = Header(None)):
     if x_token is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
-    user = decode_token(x_token)
-    # user_id = courses_services.find_sender_id(x_token)
-    user_id = user.get('id')
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token or user not found")
-######### May be optimized
-    user_role = user.get('role')
-    #user_role = courses_services.get_user_role_from_token(x_token)
-    if user_role != "teacher":
+    user = get_user_or_raise_401(x_token)
+    if user.role != "teacher":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
     new_course = courses_services.create_course(course_data)
     return new_course
