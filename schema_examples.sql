@@ -24,3 +24,4 @@ INSERT INTO `e-learning`.`sections` (`course_id`,`title`,`content`,`description`
 INSERT INTO `e-learning`.`sections` (`course_id`,`title`,`content`,`description`) VALUES (2, 'HTML Basics', 'Example content', 'Introduction to HTML markup language');
 INSERT INTO `e-learning`.`sections` (`course_id`,`title`,`content`,`description`) VALUES (3, 'CSS Styling', 'Example content', 'Learn how to style elements using CSS');
 INSERT INTO `e-learning`.`sections` (`course_id`,`title`,`content`,`description`) VALUES (4, 'William Shakespeare', 'Example content', 'Introduction to the ideas of one of the most famous authors of moder times');
+INSERT INTO `e-learning`.`sections` (`course_id`,`title`,`content`,`description`) VALUES (1, 'Test', 'test', 'Testing the test');

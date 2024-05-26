@@ -78,6 +78,12 @@ def experiment(data: dict):
     course_id = data.get('course_id')
     return courses_services.grab_any_course_by_id(course_id)
 
+
+@courses_router.get('/title')
+def show_courses_by_title(title, x_token: str = Header()):
+    pass
+
+
 # Available to guests
 @courses_router.get('/tag/{tag}')
 def show_courses_by_tag(tag, x_token: str = Header()):
