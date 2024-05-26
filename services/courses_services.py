@@ -155,3 +155,30 @@ def delete_course(course_id: int, token: str):
     else:
         raise ValueError("Provide either course_id or title to delete a course")
     return "Course NOT deleted successfully"
+
+
+def send_enrollment_request(sender_id: int, course_id: int):
+    # fetch the teacher with control over course
+    query = f'''
+            SELECT u.user_id as teacher_id
+            FROM courses_has_users chu
+            JOIN users u ON chu.user_id = u.user_id
+            WHERE chu.course_id = {course_id} AND chu.has_control = 1
+        '''
+    teacher_data = read_query(query, (course_id,))
+
+    if not teacher_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No teacher found with control over the course")
+
+    teacher_id = teacher_data[0]['user_id']
+
+    insert_query(
+        '''
+        INSERT INTO emails (sender_id, recipient_id, enrollment_request)
+        VALUES (?, ?, ?)
+        ''',
+        (sender_id, teacher_id, 1)
+    )
+
+    return "Enrollment request sent successfully"
+
