@@ -3,7 +3,7 @@ from data.models import Course, Role
 from common.auth import get_user_or_raise_401
 from typing import Optional
 from services import courses_services
-from services.users_services import decode_token, get_user_role_from_token
+from services.users_services import decode_token
 
 
 courses_router = APIRouter(prefix='/courses')
@@ -36,19 +36,24 @@ def show_courses(x_token: Optional[str] = Header(None)):
 
     return courses
 
-
+#TO DO FIX CODE!!!
 # Only available to logged users
 @courses_router.get('/id/{course_id}')
 def get_course_by_id(course_id: int, x_token: str = Header(None)):
     # Decode the token
-    user = get_user_or_raise_401(x_token)
-    user_id = user.user_id
-    user_role = user.role
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+        user_id = logged_user.user_id
+        user_role = logged_user.role
+    else:
+        logged_user = None
+
     check_course = courses_services.grab_any_course_by_id(course_id)
 
-    if check_course.status == 0 and user_role == 'guest':
+    if check_course.status == 0 and logged_user is None:
+        #user_role = guest when no user is logged in
         return courses_services.by_id_for_guest(course_id)
-    if check_course.status == 0 and user_role != 'guest':
+    elif check_course.status == 0:
         return courses_services.by_id_for_non_guest(course_id)
     elif user_role == 'student' and check_course.status == 1:
         course_to_show = courses_services.by_id_for_student(user_id, course_id)

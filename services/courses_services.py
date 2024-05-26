@@ -1,6 +1,6 @@
 from data.database import read_query, insert_query, delete_query
 from data.models import Course  # CourseHasUsers
-from services.users_services import decode_token, get_user_role_from_token
+from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
 
@@ -107,14 +107,14 @@ def create_course(course: Course) -> Course:
 
 
 def delete_course(course_id: int, token: str):
-    user_role = get_user_role_from_token(token)
-    user_id = auth.get_user_or_raise_401(token).user_id
+    user = auth.get_user_or_raise_401(token)
+    user_id = user.user_id
 
-    if user_role != ("teacher" or "admin"):
+    if user.role != ("teacher" or "admin"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access to delete rights!")
 
     #TO DO
-    if course_id is not None and user_role == "admin":
+    if course_id is not None and user.role == "admin":
         delete_query(f''' DELETE cu
                         FROM courses_has_users cu
                         WHERE cu.course_id = ?;
@@ -131,14 +131,14 @@ def delete_course(course_id: int, token: str):
     # elif title is not None and user_role == "teacher":
     #pass
 
-    elif course_id is not None and user_role == "teacher":
+    elif course_id is not None and user.role == "teacher":
         data = read_query(f'''SELECT * 
                             FROM courses_has_users cu
                             WHERE cu.course_id = 1 AND cu.has_control = 1 AND cu.user_id = {user_id}''')
         if data:
             delete_query(''' DELETE cu
-                            FROM courses_has_users cu
-                            WHERE cu.course_id = ? AND cu.has_control = 1 AND cu.user_id = ?;
+                                FROM courses_has_users cu
+                                WHERE cu.course_id = ? AND cu.has_control = 1 AND cu.user_id = ?;
                             ''', (course_id, user_id))
             delete_query('''DELETE s
                                 FROM sections s

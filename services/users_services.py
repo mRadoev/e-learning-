@@ -151,11 +151,11 @@ def give_user_info(user_id: int):
     return [User.from_query_result(*row) for row in data]
 
 
-def get_user_role_from_token(token: str) -> Optional[str]:
-    try:
-        payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
-        user_role = payload.get('role')
-        return user_role
-    except jwt.InvalidTokenError:
-        print("Invalid token")
-        return None
+# def get_user_role_from_token(token: str) -> Optional[str]:
+#     try:
+#         payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
+#         user_role = payload.get('role')
+#         return user_role
+#     except jwt.InvalidTokenError:
+#         print("Invalid token")
+#         return None
