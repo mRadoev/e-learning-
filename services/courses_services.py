@@ -181,4 +181,3 @@ def send_enrollment_request(sender_id: int, course_id: int):
     )
 
     return "Enrollment request sent successfully"
-
