@@ -9,7 +9,8 @@
     - Students can rate each course
 
 ## 2. Database - relationships between tables
-![database](./Untitled.png)
+![image](https://github.com/mRadoev/e-learning-/assets/155682021/ea913bda-425d-4887-b4a8-3a93ef1a4e88)
+
 
 ## 3. Endpoints
 ### 3.1. Courses
