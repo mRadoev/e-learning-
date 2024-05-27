@@ -24,7 +24,7 @@ def show_sections(x_token: Optional[str] = Header(None)):
     elif logged_user.role == Role.STUDENT:
         courses = sections_services.student_view(logged_user.user_id)
     elif logged_user.role == Role.ADMIN:
-        courses = sections_services.admin_view(logged_user.user_id)
+        courses = sections_services.admin_view()
     elif logged_user.role == Role.TEACHER:
         courses = sections_services.teacher_view(logged_user.user_id)
     else:

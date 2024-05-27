@@ -20,34 +20,29 @@ def guest_view():
 
 
 def student_view(user_id: int):
-    data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
-                        FROM courses c 
-                        WHERE c.status = 0
-                        UNION ALL
-                        SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
-                        FROM courses c 
-                        JOIN courses_has_users cu ON c.course_id = cu.course_id
-                        WHERE c.status = 1 AND cu.user_id = {user_id} AND cu.has_access = 1
-                        ORDER BY course_id;''')
+    data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                            FROM courses c 
+                            WHERE c.status = 0
+                            UNION ALL
+                            SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                            FROM courses c
+                            JOIN students_has_courses sc ON c.course_id = sc.course_id
+                            WHERE c.status = 1 AND sc.user_id = {user_id}
+                            ORDER BY course_id;''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_student_dict() for course in courses]
 
 
 def teacher_view(user_id: int):
-    data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
-                        FROM courses c 
-                        WHERE c.status = 0
-                        UNION ALL
-                        SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
-                        FROM courses c 
-                        JOIN courses_has_users cu ON c.course_id = cu.course_id
-                        WHERE c.status = 1 AND cu.user_id = {user_id} AND cu.has_control = 1
-                        ORDER BY course_id;''')
+    data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                            FROM courses c 
+                            WHERE c.status = 0
+                            OR c.owner_id = {user_id}''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_teacher_dict() for course in courses]
 
 
-def admin_view(user):
+def admin_view():
     data = read_query('SELECT * FROM courses')
     return [Course.from_query_result(*row) for row in data]
 
@@ -78,28 +73,31 @@ def by_id_for_non_guest(course_id):
 
 
 def by_id_for_student(student_id, course_id):
-    data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating
-                        FROM courses c
-                        JOIN courses_has_users cu ON cu.course_id = c.course_id
-                        WHERE c.status = 1 AND cu.has_access = 1 AND c.course_id = {course_id} AND cu.user_id = {student_id};''')
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                            FROM courses c
+                            JOIN students_has_courses sc ON sc.course_id = c.course_id
+                            WHERE c.status = 1 AND c.course_id = {course_id} AND sc.user_id = {student_id}
+                            UNION ALL
+                            SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                            FROM courses c
+                            WHERE c.status = 0 AND c.course_id = {course_id}''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_student_dict()
 
 
 def by_id_for_teacher(teacher_id, course_id):
-    data = read_query(f'''SELECT c.course_id, c.title, c.description, c.objectives, c.owner, c.tags, c.status, c.student_rating 
-                        FROM courses c
-                        JOIN courses_has_users cu ON cu.course_id = c.course_id
-                        WHERE c.status = 1 AND cu.has_control = 1 AND c.course_id = {course_id} AND cu.user_id = {teacher_id};''')
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                            FROM courses c
+                            WHERE (c.owner_id = {teacher_id} AND c.course_id = {course_id})
+                            OR (c.status = 0 AND c.course_id = {course_id})''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_teacher_dict()
 
 
 def create_course(course: Course) -> Course:
     generated_id = insert_query(
-        'INSERT INTO courses(title, description, objectives, owner, tags, status, students_rating) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        (course.title, course.description, course.objectives, course.owner, ','.join(course.tags), course.status,
-         course.students_rating)
+        'INSERT INTO courses(title, owner_id,description, objectives, tags, status) VALUES (?, ?, ?, ?, ?, ?)',
+        (course.title, course.owner_id, course.description, course.objectives, ','.join(course.tags), course.status)
     )
     course.course_id = generated_id
 
@@ -115,17 +113,17 @@ def delete_course(course_id: int, token: str):
 
     #TO DO
     if course_id is not None and user.role == "admin":
-        delete_query(f''' DELETE cu
-                        FROM courses_has_users cu
-                        WHERE cu.course_id = ?;
-                        
-                        DELETE s
-                        FROM sections s
-                        WHERE s.course_id = ?;
-                        
-                        DELETE courses
-                        FROM courses
-                        WHERE courses.course_id = ?;''')
+        delete_query(f''' DELETE sc
+                            FROM students_has_courses sc
+                            WHERE sc.course_id = ?;
+                            
+                            DELETE s
+                            FROM sections s
+                            WHERE s.course_id = ?;
+                            
+                            DELETE courses
+                            FROM courses
+                            WHERE courses.course_id = ?;''')
 
     ###
     # elif title is not None and user_role == "teacher":
@@ -133,21 +131,19 @@ def delete_course(course_id: int, token: str):
 
     elif course_id is not None and user.role == "teacher":
         data = read_query(f'''SELECT * 
-                            FROM courses_has_users cu
-                            WHERE cu.course_id = 1 AND cu.has_control = 1 AND cu.user_id = {user_id}''')
+                                FROM courses c 
+                                WHERE c.owner_id = {user_id}AND c.course_id = {course_id} ''')
         if data:
-            delete_query(''' DELETE cu
-                                FROM courses_has_users cu
-                                WHERE cu.course_id = ? AND cu.has_control = 1 AND cu.user_id = ?;
-                            ''', (course_id, user_id))
-            delete_query('''DELETE s
+            delete_query(f''' DELETE sc
+                                FROM students_has_courses sc
+                                WHERE sc.course_id = {course_id}''')
+            delete_query(f'''DELETE s
                                 FROM sections s
-                                WHERE s.course_id = ?;
+                                WHERE s.course_id = {course_id};
                                 
                                 DELETE courses
                                 FROM courses
-                                WHERE courses.course_id = ?;''',
-                         (course_id, course_id, course_id))
+                                WHERE courses.course_id = {course_id}''')
             return "Course deleted successfully!"
 
         return f"Course with id #{course_id} not found."
@@ -159,18 +155,15 @@ def delete_course(course_id: int, token: str):
 
 def send_enrollment_request(sender_id: int, course_id: int):
     # fetch the teacher with control over course
-    query = f'''
-            SELECT u.user_id as teacher_id
-            FROM courses_has_users chu
-            JOIN users u ON chu.user_id = u.user_id
-            WHERE chu.course_id = {course_id} AND chu.has_control = 1
-        '''
-    teacher_data = read_query(query, (course_id,))
+    data = read_query(f'''SELECT c.owner_id as teacher_id
+                            FROM courses c
+                            WHERE c.course_id = {course_id}
+                            ''')
 
-    if not teacher_data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No teacher found with control over the course")
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    teacher_id = teacher_data[0]['user_id']
+    teacher_id = data[0]['teacher_id']
 
     insert_query(
         '''

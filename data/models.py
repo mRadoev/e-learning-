@@ -45,13 +45,13 @@ class User(BaseModel):
 
 class Course(BaseModel):
     course_id: int
+    owner_id: int
     title: str
     description: str
     objectives: str = None
-    owner: int = None
     tags: str
     status: int = 0  # 0 = public, 1 = premium
-    student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
+    # student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
@@ -65,16 +65,15 @@ class Course(BaseModel):
 
 
     @classmethod
-    def from_query_result(cls, course_id, title, description, objectives, owner, tags, status, student_rating):
+    def from_query_result(cls, course_id, owner_id, title, description, objectives, tags, status):
         return cls(
             course_id=course_id,
+            owner_id=owner_id,
             title=title,
             description=description,
             objectives=objectives,
-            owner=owner,
             tags=tags,
-            status=status,
-            student_rating="Not yet rated" if (student_rating is None) else student_rating
+            status=status
         )
 
 
@@ -103,6 +102,13 @@ class Section(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+# class Student:
+
+# class Teacher:
+
+
 
 # class Message(BaseModel):
 #     message_id: int | None = None

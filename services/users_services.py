@@ -40,17 +40,26 @@ def try_login(email: str, password: str) -> User | None:
 
 def create(role: str, first_name: str, last_name: str, password: str, email: str) -> User | None:
     # password = _hash_password(password)
-    try:
-        generated_id = insert_query(
-            'INSERT INTO users(role, first_name, last_name, password, email) VALUES (?,?,?,?,?)',
-            (role, first_name, last_name, password, email))
+    generated_id = insert_query(
+        'INSERT INTO users(role, first_name, last_name, password, email) VALUES (?,?,?,?,?)',
+        (role, first_name, last_name, password, email))
 
-        return User(id=generated_id, role=role, first_name=first_name, last_name=last_name, password=password, email=email)
+        # return User(id=generated_id, role=role, first_name=first_name, last_name=last_name, password=password, email=email)
 
-    except IntegrityError:
-        # mariadb raises this error when a constraint is violated
-        # in that case we have duplicate emails
-        return None
+    if role == 'student':
+        insert_query(
+            f'INSERT INTO students(student_id) VALUES ({generated_id})')
+
+    if role == 'teacher':
+        insert_query(
+            f'INSERT INTO teachers(teacher_id) VALUES ({generated_id})')
+
+    return User(id=generated_id, role=role, first_name=first_name, last_name=last_name, password=password, email=email)
+
+    # except IntegrityError:
+    #     # mariadb raises this error when a constraint is violated
+    #     # in that case we have duplicate emails
+    #     return None
 
 
 def create_token(user: User) -> str:
