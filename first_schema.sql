@@ -71,7 +71,7 @@ AUTO_INCREMENT = 6;
 -- Table `e-learning`.`emails`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `e-learning`.`emails` (
-  `email_id` INT NOT NULL,
+  `email_id` INT NOT NULL AUTO_INCREMENT,
   `sender_id` INT NOT NULL,
   `recipient_id` INT NOT NULL,
   `enrollment_request` TINYINT(4) NULL DEFAULT NULL,

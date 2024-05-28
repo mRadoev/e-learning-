@@ -43,12 +43,14 @@ def teacher_view(user_id: int):
 
 
 def admin_view():
-    data = read_query('SELECT * FROM courses')
+    data = read_query('''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                            FROM courses''')
     return [Course.from_query_result(*row) for row in data]
 
 
 def grab_any_course_by_id(course_id: int):
-    data = read_query(f'SELECT * FROM courses WHERE course_id = {course_id}')
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                            FROM courses c WHERE course_id = {course_id}''')
     # course = [Course.from_query_result(*row) for row in data]
     course = next((Course.from_query_result(*row) for row in data), None)
     if course:
@@ -57,17 +59,17 @@ def grab_any_course_by_id(course_id: int):
 
 
 def by_id_for_guest(course_id):
-    data = read_query(f'''SELECT * 
-                        FROM courses c
-                        WHERE c.status = 0 AND c.course_id = {course_id};''')
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                            FROM courses c
+                            WHERE c.status = 0 AND c.course_id = {course_id};''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_guest_dict()
 
 
 def by_id_for_non_guest(course_id):
-    data = read_query(f'''SELECT * 
-                        FROM courses c
-                        WHERE c.status = 0 AND c.course_id = {course_id};''')
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                            FROM courses c
+                            WHERE c.status = 0 AND c.course_id = {course_id};''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_student_dict()
 
@@ -154,21 +156,32 @@ def delete_course(course_id: int, token: str):
 
 
 def send_enrollment_request(sender_id: int, course_id: int):
+    course = grab_any_course_by_id(course_id)
+    recipient_id = course.owner_id
+
     # fetch the teacher with control over course
     data = read_query(f'''SELECT c.owner_id as teacher_id
                             FROM courses c
                             WHERE c.course_id = {course_id}
                             ''')
 
+    enrollment_exists = read_query(f'''SELECT *
+                            FROM emails e
+                            WHERE e.sender_id = {sender_id} AND e.recipient_id = {recipient_id}
+                            ''')
+
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    teacher_id = data[0]['teacher_id']
+    teacher_id = data[0][0]
 
-    insert_query(
-        f'''
-        INSERT INTO emails (sender_id, recipient_id, enrollment_request)
-        VALUES ({sender_id}, {teacher_id}, 1)
-        ''')
+    if not enrollment_exists:
+        insert_query(
+            f'''
+            INSERT INTO emails (sender_id, recipient_id, enrollment_request)
+            VALUES ({sender_id}, {teacher_id}, 1)
+            ''')
 
-    return "Enrollment request sent successfully"
+        return "Enrollment request sent successfully"
+
+    return "You have already enrolled for this course!"

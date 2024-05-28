@@ -137,7 +137,7 @@ def enroll_in_course(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can send enrollment requests.")
-    #Need to limit enrollment requests per student per course to 1
+
     result = courses_services.send_enrollment_request(user.user_id, course_id)
     return result
 
