@@ -166,11 +166,9 @@ def send_enrollment_request(sender_id: int, course_id: int):
     teacher_id = data[0]['teacher_id']
 
     insert_query(
-        '''
+        f'''
         INSERT INTO emails (sender_id, recipient_id, enrollment_request)
-        VALUES (?, ?, ?)
-        ''',
-        (sender_id, teacher_id, 1)
-    )
+        VALUES ({sender_id}, {teacher_id}, 1)
+        ''')
 
     return "Enrollment request sent successfully"

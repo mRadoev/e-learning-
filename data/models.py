@@ -104,7 +104,18 @@ class Section(BaseModel):
         arbitrary_types_allowed = True
 
 
-# class Student:
+class Email(BaseModel):
+    email_id: int
+    sender_id: int
+    recipient_id: int
+    enrollment_request: bool = None
+
+    @classmethod
+    def from_query_result(cls, email_id, sender_id, recipient_id, enrollment_request):
+        return cls(email_id=email_id, sender_id=sender_id,
+                   recipient_id=recipient_id, enrollment_request=enrollment_request)
+
+                          # class Student:
 
 # class Teacher:
 
