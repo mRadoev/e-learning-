@@ -1,4 +1,4 @@
-from data.database import insert_query, read_query
+from data.database import insert_query, read_query, update_query
 from data.models import User
 from typing import Optional
 from mariadb import IntegrityError
@@ -6,6 +6,7 @@ from fastapi import HTTPException
 import mariadb
 import jwt
 from flask import session
+
 
 # _SEPARATOR = ';'
 
@@ -16,10 +17,9 @@ from flask import session
 
 def find_by_id(user_id: int) -> User | None:
     data = read_query(
-        'SELECT user_id, role, email, first_name, last_name, password FROM users WHERE user_id = ?',
-        (user_id,))
-
+        f'SELECT user_id, role, email, first_name, last_name, password FROM users WHERE user_id = {user_id}')
     return next((User.from_query_result(*row) for row in data), None)
+
 
 def find_by_email(email: str) -> User | None:
     data = read_query(
@@ -44,7 +44,7 @@ def create(role: str, first_name: str, last_name: str, password: str, email: str
         'INSERT INTO users(role, first_name, last_name, password, email) VALUES (?,?,?,?,?)',
         (role, first_name, last_name, password, email))
 
-        # return User(id=generated_id, role=role, first_name=first_name, last_name=last_name, password=password, email=email)
+    # return User(id=generated_id, role=role, first_name=first_name, last_name=last_name, password=password, email=email)
 
     if role == 'student':
         insert_query(
@@ -158,6 +158,15 @@ def give_user_info(user_id: int):
     data = read_query('SELECT user_id, first_name, last_name, email FROM users WHERE user_id = ?', (user_id,))
 
     return [User.from_query_result(*row) for row in data]
+
+
+def update_user(data: dict, user_id):
+    for key, value in data.items():
+        if type(value) is str:
+            value = '"' + f'{value}' + '"'
+        update_query(f'''UPDATE users
+                        SET {key} = {value} 
+                        WHERE user_id = {user_id}''')
 
 
 # def get_user_role_from_token(token: str) -> Optional[str]:

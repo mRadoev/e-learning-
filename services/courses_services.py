@@ -13,7 +13,7 @@ from fastapi import HTTPException, status, Header
 
 
 def guest_view():
-    data = read_query('SELECT * '
+    data = read_query('SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status '
                       'FROM courses AS c WHERE c.status = 0')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_guest_dict() for course in courses]

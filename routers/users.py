@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Response, status, HTTPException, Header
+
+from common.auth import get_user_or_raise_401
 from data.models import User, LoginData
-from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token, try_login
+from services import users_services
+from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token, try_login, find_by_id
 
 #Initial functionality, viewing all users not mandatory, but helpful for testing purposes
 users_router = APIRouter(prefix='/users')
@@ -67,6 +70,16 @@ def logout(response: Response):
     # clear token from client's storage (e.g., local storage, session storage, cookies)
     response.delete_cookie("token")
     return {"message": "Logged out successfully"}
+
+@users_router.put('/account')
+def update_course(data: dict, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+    if data.get('user_id'):
+        return "User id cannot be edited."
+
+    users_services.update_user(data, user.user_id)
+
+    return "User info updated successfully!"
 
 
 #Students can edit everything about their account information except their email (I assume they can't edit their id)

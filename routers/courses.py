@@ -20,8 +20,6 @@ def show_courses(x_token: Optional[str] = Header(None)):
     else:
         logged_user = None
 
-    # logged_user.role = get_user_role_from_token(x_token)
-
     # all public courses and the courses which the logged user has access to
     if not logged_user:
         courses = courses_services.guest_view()
@@ -68,10 +66,6 @@ def get_course_by_id(course_id: int, x_token: str = Header(None)):
 
 
 # Only available to logged users
-# BY TITLE may be not necessary?
-# @courses_router.get('/title/{course_title}')
-# def show_course_by_title(course_title: str, x_token: str = Header(...)) -> Course:
-#     pass
 
 @courses_router.get('/any')
 def experiment(data: dict):
