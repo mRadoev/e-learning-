@@ -125,10 +125,10 @@ def delete_course(data, x_token: str = Header()):
 # Admins can remove access to courses for students(CourseHasUsers)
 # Students must be able to unsubscribe from premium courses
 @courses_router.put('/update/id/{course_id}')
-def update_course(data: dict, course_id, x_token: str = Header()):
+def update_course(data: dict, course_id: int, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
-    # if data['course_id']:
-    #     return "Course id must be entered as a Path parameter."
+    if data.get('course_id'):
+        return "Course id must be entered as a Path parameter."
 
     course = courses_services.grab_any_course_by_id(course_id)
 

@@ -54,8 +54,8 @@ def create_section(data: Section, x_token: str = Header()):
 @sections_router.put('/update/id/{section_id}')
 def update_section(data: dict, section_id, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
-    # if data['section_id']:
-    #     return "Section id must be entered as a Path parameter."
+    if data.get('section_id'):
+        return "Section id must be entered as a Path parameter."
 
     section = sections_services.grab_any_section_by_id(section_id)
     course = courses_services.grab_any_course_by_id(section.course_id)

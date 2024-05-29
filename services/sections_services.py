@@ -64,10 +64,10 @@ def grab_any_section_by_id(section_id: int) -> Section:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
 
 
-def update_section(data, section_id):
+def update_section(data: dict, section_id: int):
     for key, value in data.items():
         if type(value) is str:
-            value = f"{value}"
+            value = '"'+f'{value}'+'"'
         update_query(f'''UPDATE sections
                         SET {key} = {value} 
                         WHERE section_id = {section_id}''')

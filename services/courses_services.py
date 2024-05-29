@@ -155,10 +155,11 @@ def delete_course(course_id: int, token: str):
     return "Course NOT deleted successfully"
 
 
-def update_course(data: dict, course_id):
+def update_course(data: dict, course_id: int):
+    #Can this be improved?
     for key, value in data.items():
         if type(value) is str:
-            value = f"{value}"
+            value = '"' + f'{value}' + '"'
         update_query(f'''UPDATE courses
                         SET {key} = {value} 
                         WHERE course_id = {course_id}''')
