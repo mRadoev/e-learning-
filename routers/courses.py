@@ -122,17 +122,28 @@ def delete_course(data, x_token: str = Header()):
     return result
 
 
-# Teachers can only update courses that they own
 # Admins can remove access to courses for students(CourseHasUsers)
 # Students must be able to unsubscribe from premium courses
-@courses_router.put('/update')
-def update_course(data, x_token: str = Header()):
-    pass
+@courses_router.put('/update/id/{course_id}')
+def update_course(data: dict, course_id, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+    # if data['course_id']:
+    #     return "Course id must be entered as a Path parameter."
+
+    course = courses_services.grab_any_course_by_id(course_id)
+
+    if user.role != "teacher" or course.owner_id != user.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers that own the course can edit it!")
+
+    courses_services.update_course(data, course_id)
+
+    return "Course updated successfully!"
+
 
 
 # (only?)Students can enroll in up to 5 premium courses and unlimited public courses
 # Teachers should be able to approve enrollment requests and could be notified by email about the request
-@courses_router.post("/enroll/{course_id}")
+@courses_router.post("/enroll/id/{course_id}")
 def enroll_in_course(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":

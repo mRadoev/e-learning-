@@ -1,4 +1,4 @@
-from data.database import read_query, insert_query, delete_query
+from data.database import read_query, insert_query, delete_query, update_query
 from data.models import Course, Section  # CourseHasUsers
 from services.users_services import decode_token
 from common import auth
@@ -52,3 +52,22 @@ def admin_view():
                         ORDER BY course_id''')
     sections = [Section.from_query_result(*row) for row in data]
     return sections
+
+
+def grab_any_section_by_id(section_id: int) -> Section:
+    data = read_query(f'''SELECT s.course_id, s.section_id, s.title, s.content, s.description, s.link 
+                            FROM sections s WHERE s.section_id = {section_id}''')
+    # course = [Course.from_query_result(*row) for row in data]
+    section = next((Section.from_query_result(*row) for row in data), None)
+    if section:
+        return section
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
+
+
+def update_section(data, section_id):
+    for key, value in data.items():
+        if type(value) is str:
+            value = f"{value}"
+        update_query(f'''UPDATE sections
+                        SET {key} = {value} 
+                        WHERE section_id = {section_id}''')

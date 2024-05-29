@@ -1,4 +1,4 @@
-from data.database import read_query, insert_query, delete_query
+from data.database import read_query, insert_query, delete_query, update_query
 from data.models import Course  # CourseHasUsers
 from services.users_services import decode_token
 from common import auth
@@ -48,7 +48,7 @@ def admin_view():
     return [Course.from_query_result(*row) for row in data]
 
 
-def grab_any_course_by_id(course_id: int):
+def grab_any_course_by_id(course_id: int) -> Course:
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
                             FROM courses c WHERE course_id = {course_id}''')
     # course = [Course.from_query_result(*row) for row in data]
@@ -153,6 +153,15 @@ def delete_course(course_id: int, token: str):
     else:
         raise ValueError("Provide either course_id or title to delete a course")
     return "Course NOT deleted successfully"
+
+
+def update_course(data: dict, course_id):
+    for key, value in data.items():
+        if type(value) is str:
+            value = f"{value}"
+        update_query(f'''UPDATE courses
+                        SET {key} = {value} 
+                        WHERE course_id = {course_id}''')
 
 
 def send_enrollment_request(sender_id: int, course_id: int):
