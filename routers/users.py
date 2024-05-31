@@ -74,8 +74,8 @@ def logout(response: Response):
 @users_router.put('/account')
 def update_user(data: dict, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
-    if data.get('user_id'):
-        return "User id cannot be edited."
+    if data.get('user_id') or data.get('role'):
+        return "You cannot change your ID or role."
 
     users_services.update_user(data, user.user_id)
 

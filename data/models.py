@@ -57,11 +57,11 @@ class Course(BaseModel):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
 
     def to_student_dict(self):
-        return self.dict(include={'course_id', 'title', 'description', 'objectives', 'owner', 'tags', 'student_rating'})
+        return self.dict(include={'course_id', 'title', 'description', 'objectives', 'owner_id', 'tags'})
 
     def to_teacher_dict(self):
         return self.dict(
-            include={'course_id', 'title', 'description', 'objectives', 'owner', 'tags', 'status', 'student_rating'})
+            include={'course_id', 'title', 'description', 'objectives', 'owner_id', 'tags', 'status'})
 
 
     @classmethod

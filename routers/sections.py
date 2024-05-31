@@ -53,7 +53,7 @@ def create_section(section_data: Section, x_token: str = Header(None)):
 
     user = get_user_or_raise_401(x_token)
     if user.role != "teacher":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create sections")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create sections!")
 
     course = courses_services.grab_any_course_by_id(section_data.course_id)
     if course.owner_id != user.user_id:
@@ -68,13 +68,13 @@ def create_section(section_data: Section, x_token: str = Header(None)):
 def update_section(data: dict, section_id, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     if data.get('section_id'):
-        return "Section id must be entered as a Path parameter."
+        return "Section ID must be entered as a Path parameter."
 
     section = sections_services.grab_any_section_by_id(section_id)
     course = courses_services.grab_any_course_by_id(section.course_id)
 
     if user.role != "teacher" or course.owner_id != user.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers that own the course can edit it!")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers that own the course can update its sections!")
 
     sections_services.update_section(data, section_id)
 

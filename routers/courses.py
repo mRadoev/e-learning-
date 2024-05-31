@@ -49,7 +49,6 @@ def get_course_by_id(course_id: int, x_token: str = Header(None)):
     check_course = courses_services.grab_any_course_by_id(course_id)
 
     if check_course.status == 0 and logged_user is None:
-        #user_role = guest when no user is logged in
         return courses_services.by_id_for_guest(course_id)
     elif check_course.status == 0:
         return courses_services.by_id_for_non_guest(course_id)
@@ -74,8 +73,18 @@ def experiment(data: dict):
 
 
 @courses_router.get('/title')
-def show_courses_by_title(title, x_token: str = Header()):
-    pass
+def show_courses_by_title(title: dict, x_token: str = Header(None)):
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+        user_id = logged_user.user_id
+        user_role = logged_user.role
+    else:
+        user_role = None
+        user_id = None
+
+    courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
+    return courses
+
 
 
 # Available to guests
@@ -124,7 +133,7 @@ def delete_course(data, x_token: str = Header()):
 def update_course(data: dict, course_id: int, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     if data.get('course_id'):
-        return "Course id must be entered as a Path parameter."
+        return "Course ID must be entered as a Path parameter."
 
     course = courses_services.grab_any_course_by_id(course_id)
 

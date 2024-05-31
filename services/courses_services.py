@@ -58,6 +58,46 @@ def grab_any_course_by_id(course_id: int) -> Course:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 
+def grab_any_course_by_title(course_title: str, user_id: int, user_role: str):
+    public_titles = f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE title LIKE '%{course_title}%'
+                        AND c.status = 0 '''
+
+    student_titles = f'''UNION ALL 
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c 
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id 
+                        WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND sc.user_id = {user_id};'''
+
+    teacher_titles = f'''UNION ALL 
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c 
+                        WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND c.owner_id = {user_id};'''
+
+    admin_titles = f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                FROM courses c 
+                WHERE title LIKE '%{course_title}%'''
+
+    if user_role is None:
+        guest = read_query(public_titles)
+        courses = [Course.from_query_result(*row) for row in guest]
+        return [course.to_guest_dict() for course in courses]
+    elif user_role == 'student':
+        student = read_query(public_titles + student_titles)
+        courses = [Course.from_query_result(*row) for row in student]
+        return [course.to_student_dict() for course in courses]
+    elif user_role == 'teacher':
+        teacher = read_query(public_titles + teacher_titles)
+        courses = [Course.from_query_result(*row) for row in teacher]
+        return [course.to_teacher_dict() for course in courses]
+    elif user_role == 'admin':
+        admin = read_query(admin_titles)
+        return [Course.from_query_result(*row) for row in admin]
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+
 def by_id_for_guest(course_id):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
                             FROM courses c
@@ -170,7 +210,7 @@ def send_enrollment_request(sender_id: int, course_id: int):
     recipient_id = course.owner_id
 
     # fetch the teacher with control over course
-    data = read_query(f'''SELECT c.owner_id as teacher_id
+    data = read_query(f'''SELECT c.owner_id
                             FROM courses c
                             WHERE c.course_id = {course_id}
                             ''')
