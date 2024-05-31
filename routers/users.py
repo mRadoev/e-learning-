@@ -72,7 +72,7 @@ def logout(response: Response):
     return {"message": "Logged out successfully"}
 
 @users_router.put('/account')
-def update_course(data: dict, x_token: str = Header()):
+def update_user(data: dict, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     if data.get('user_id'):
         return "User id cannot be edited."

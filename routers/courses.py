@@ -146,5 +146,16 @@ def enroll_in_course(course_id: int, x_token: str = Header(...)):
     result = courses_services.send_enrollment_request(user.user_id, course_id)
     return result
 
+
+@courses_router.post("/unsubscribe/id/{course_id}")
+def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...)):
+    user = get_user_or_raise_401(x_token)
+    if user.role != "student":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can unsubscribe from courses.")
+
+    result = courses_services.unsubscribe_from_course(user.user_id, course_id)
+    return result
+
+
 # Students should be able to rate courses that they've enrolled in
 

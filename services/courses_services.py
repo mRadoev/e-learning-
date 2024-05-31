@@ -195,3 +195,22 @@ def send_enrollment_request(sender_id: int, course_id: int):
         return "Enrollment request sent successfully"
 
     return "You have already enrolled for this course!"
+
+
+def unsubscribe_from_course(user_id: int, course_id: int):
+    enrollment_exists = read_query(f'''
+        SELECT *
+        FROM students_has_courses sc
+        WHERE sc.course_id = {course_id} AND sc.user_id = {user_id}
+    ''')
+
+    if not enrollment_exists:
+        return "You are not enrolled in this course."
+
+    # Delete the enrollment record
+    delete_query(f'''
+        DELETE FROM students_has_courses
+        WHERE course_id = {course_id} AND user_id = {user_id}
+    ''')
+
+    return "Unsubscribed from the course successfully."
