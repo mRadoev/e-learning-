@@ -95,11 +95,13 @@ def show_courses_by_rating(rating, x_token: str = Header()):
 def create_course(course_data: Course, x_token: str = Header(None)):
     if x_token is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
+
     user = get_user_or_raise_401(x_token)
     if user.role != "teacher":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
-    new_course = courses_services.create_course(course_data)
-    return new_course
+
+    new_course = courses_services.create_course(course_data, user.user_id)
+    return "New course created successfully!", new_course
 
 
 ########To optimize and fix

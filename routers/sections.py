@@ -47,8 +47,21 @@ def show_section_by_title(section_title, x_token: str = Header()):
 
 #Only teachers that own the course can create new sections for it and update it
 @sections_router.post('/new')
-def create_section(data: Section, x_token: str = Header()):
-    pass
+def create_section(section_data: Section, x_token: str = Header(None)):
+    if x_token is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
+
+    user = get_user_or_raise_401(x_token)
+    if user.role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create sections")
+
+    course = courses_services.grab_any_course_by_id(section_data.course_id)
+    if course.owner_id != user.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="You need to be the owner of the course to add sections to it!")
+
+    new_section = sections_services.create_section(section_data)
+    return "New section created successfully!", new_section
 
 
 @sections_router.put('/update/id/{section_id}')

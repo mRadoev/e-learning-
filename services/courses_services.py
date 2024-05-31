@@ -96,13 +96,13 @@ def by_id_for_teacher(teacher_id, course_id):
     return shown_course.to_teacher_dict()
 
 
-def create_course(course: Course) -> Course:
+def create_course(course: Course, owner_id: int) -> Course:
     generated_id = insert_query(
-        'INSERT INTO courses(title, owner_id,description, objectives, tags, status) VALUES (?, ?, ?, ?, ?, ?)',
-        (course.title, course.owner_id, course.description, course.objectives, ','.join(course.tags), course.status)
+        'INSERT INTO courses(title, owner_id,description, objectives, tags, status) VALUES(?, ?, ?, ?, ?, ?)',
+        (course.title, owner_id, course.description, course.objectives, course.tags, course.status)
     )
     course.course_id = generated_id
-
+    course.owner_id = owner_id
     return course
 
 

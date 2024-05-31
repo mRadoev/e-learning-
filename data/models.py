@@ -44,11 +44,11 @@ class User(BaseModel):
 
 
 class Course(BaseModel):
-    course_id: int
-    owner_id: int
+    course_id: int | None = None
+    owner_id: int | None = None
     title: str
     description: str
-    objectives: str = None
+    objectives: str
     tags: str
     status: int = 0  # 0 = public, 1 = premium
     # student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
@@ -83,11 +83,11 @@ class Course(BaseModel):
 
 class Section(BaseModel):
     course_id: int
-    section_id: int
+    section_id: int | None = None
     title: str
     content: str
-    description: str | None = None
-    link: str | None = None
+    description: str = "No description given yet"
+    link: str = "No link given yet"
 
     @classmethod
     def from_query_result(cls, course_id, section_id, title, content, description, link):

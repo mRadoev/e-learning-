@@ -71,3 +71,12 @@ def update_section(data: dict, section_id: int):
         update_query(f'''UPDATE sections
                         SET {key} = {value} 
                         WHERE section_id = {section_id}''')
+
+
+def create_section(section):
+    generated_id = insert_query('''INSERT INTO sections(course_id, title, content, description, link) 
+    VALUES(?, ?, ?, ?, ?)''', (section.course_id, section.title, section.content, section.description, section.link))
+
+    section.section_id = generated_id
+
+    return section
