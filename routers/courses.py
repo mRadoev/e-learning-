@@ -48,7 +48,9 @@ def get_course_by_id(course_id: int, x_token: str = Header(None)):
 
     check_course = courses_services.grab_any_course_by_id(course_id)
 
-    if check_course.status == 0 and logged_user is None:
+    if user_role == 'admin':
+        return check_course
+    elif check_course.status == 0 and logged_user is None:
         return courses_services.by_id_for_guest(course_id)
     elif check_course.status == 0:
         return courses_services.by_id_for_non_guest(course_id)
@@ -58,8 +60,6 @@ def get_course_by_id(course_id: int, x_token: str = Header(None)):
     elif user_role == 'teacher' and check_course.status == 1:
         course_to_show = courses_services.by_id_for_teacher(user_id, course_id)
         return course_to_show
-    elif user_role == 'admin':
-        return check_course
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
@@ -82,8 +82,25 @@ def show_courses_by_title(title: dict, x_token: str = Header(None)):
         user_role = None
         user_id = None
 
-    courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
-    return courses
+    course_title = title.get('title')
+
+    if user_role is None:
+        courses_to_show = courses_services.by_title_for_guest(course_title)
+        return courses_to_show
+    if user_role == 'student':
+        courses_to_show = courses_services.by_title_for_student(course_title, user_id)
+        return courses_to_show
+    if user_role == 'teacher':
+        courses_to_show = courses_services.by_title_for_teacher(course_title, user_id)
+        return courses_to_show
+    elif user_role == 'admin':
+        courses_to_show = courses_services.by_title_for_admin(course_title)
+        return courses_to_show
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    #
+    # courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
+    # return courses
 
 
 
