@@ -1,5 +1,5 @@
 from data.database import read_query, insert_query, delete_query, update_query
-from data.models import Course  # CourseHasUsers
+from data.models import Course, Email  # CourseHasUsers
 from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
@@ -199,6 +199,18 @@ def delete_course(course_id: int, token: str):
     return "Course NOT deleted successfully"
 
 
+def check_premium_limit_reached(student_id: int):
+    data = read_query(f'''SELECT course_id
+                        FROM students_has_courses sc
+                        WHERE sc.user_id = {student_id}''')
+    premium_courses = 0
+    for row in data:
+        premium_courses += 1
+    if premium_courses >= 5:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                             detail="You have reached your premium course enrollment limit of 5")
+
+
 def update_course(data: dict, course_id: int):
     #Can this be improved?
     for key, value in data.items():
@@ -221,7 +233,8 @@ def send_enrollment_request(sender_id: int, course_id: int):
 
     enrollment_exists = read_query(f'''SELECT *
                             FROM emails e
-                            WHERE e.sender_id = {sender_id} AND e.recipient_id = {recipient_id}
+                            WHERE e.sender_id = {sender_id} 
+                            AND e.recipient_id = {recipient_id} AND e.course_id = {course_id}
                             ''')
 
     if not data:
@@ -232,8 +245,8 @@ def send_enrollment_request(sender_id: int, course_id: int):
     if not enrollment_exists:
         insert_query(
             f'''
-            INSERT INTO emails (sender_id, recipient_id, enrollment_request)
-            VALUES ({sender_id}, {teacher_id}, 1)
+            INSERT INTO emails (sender_id, recipient_id, course_id)
+            VALUES ({sender_id}, {teacher_id}, {course_id})
             ''')
 
         return "Enrollment request sent successfully"
@@ -252,9 +265,40 @@ def unsubscribe_from_course(user_id: int, course_id: int):
         return "You are not enrolled in this course."
 
     # Delete the enrollment record
-    delete_query(f'''
-        DELETE FROM students_has_courses
-        WHERE course_id = {course_id} AND user_id = {user_id}
-    ''')
+    delete_query(f'''DELETE FROM students_has_courses
+                    WHERE course_id = {course_id} AND user_id = {user_id}''')
 
     return "Unsubscribed from the course successfully."
+
+
+def show_pending_requests(user_id):
+    data = read_query(f'''SELECT * 
+                        FROM emails e
+                        WHERE e.recipient_id = {user_id} AND e.response IS NULL;''')
+    emails = [Email.from_query_result(*row) for row in data]
+    return emails
+
+
+def respond_to_request(course_id: int, student_id: int, response: bool):
+    data = read_query(f'''SELECT * 
+                    FROM students_has_courses sc 
+                    WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+    update_query(f'''UPDATE emails e
+                    SET e.response = {response}
+                    WHERE e.sender_id = {student_id} AND e.course_id = {course_id}''')
+    if response and not data:
+        insert_query(f'''INSERT INTO students_has_courses(course_id, user_id) 
+        VALUES({course_id},{student_id})''')
+
+        return "Student {} successfully ACCEPTED in course {}."
+
+    elif response:
+        return f"Student ID #{student_id} already ACCEPTED in course ID #{course_id}"
+
+    else:
+        delete_query(f'''DELETE sc
+                    FROM students_has_courses sc
+                    WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+
+        return f"Student ID #{student_id} successfully REJECTED from course ID #{course_id}"
+

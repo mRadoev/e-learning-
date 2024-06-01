@@ -107,13 +107,14 @@ class Section(BaseModel):
 class Email(BaseModel):
     email_id: int
     sender_id: int
-    recipient_id: int
-    enrollment_request: bool = None
+    recipient_id: int | None = None
+    course_id: int
+    response: bool | None = None
 
     @classmethod
-    def from_query_result(cls, email_id, sender_id, recipient_id, enrollment_request):
+    def from_query_result(cls, email_id, sender_id, recipient_id, course_id, response):
         return cls(email_id=email_id, sender_id=sender_id,
-                   recipient_id=recipient_id, enrollment_request=enrollment_request)
+                   recipient_id=recipient_id, course_id=course_id, response=response)
 
                           # class Student:
 

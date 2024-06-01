@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response, status, HTTPException, Header
 
 from common.auth import get_user_or_raise_401
 from data.models import User, LoginData
-from services import users_services
+from services import users_services, courses_services
 from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token, try_login, find_by_id
 
 #Initial functionality, viewing all users not mandatory, but helpful for testing purposes
@@ -57,9 +57,13 @@ def registration(data: User):
 @users_router.post('/login')
 def login(data: LoginData):
     user = try_login(data.email, data.password)
+    if user.role == 'teacher':
+        requests = courses_services.show_pending_requests(user.user_id)
     if user:
         # if login is successful, token is created
         token = create_token(user)
+        if requests:
+            return {"token": token}, "You have pending enrollment requests!"
         return {"token": token}
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")

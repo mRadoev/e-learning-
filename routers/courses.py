@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException, Header
-from data.models import Course, Role
+from data.models import Course, Role, Email
 from common.auth import get_user_or_raise_401
 from typing import Optional
 from services import courses_services
@@ -171,8 +171,41 @@ def enroll_in_course(course_id: int, x_token: str = Header(...)):
     if user.role != "student":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can send enrollment requests.")
 
+    courses_services.check_premium_limit_reached(user.user_id)
     result = courses_services.send_enrollment_request(user.user_id, course_id)
     return result
+
+
+@courses_router.get("/requests")
+def show_requests(x_token: str = Header(...)):
+    user = get_user_or_raise_401(x_token)
+    if user.role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can have requests.")
+
+    emails = courses_services.show_pending_requests(user.user_id)
+    if emails:
+        return emails
+    return "You have no pending requests!"
+
+
+@courses_router.post("/requests/{response}")
+def respond_request(data: Email, response: str = "approve" or "reject", x_token: str = Header(...)):
+    user = get_user_or_raise_401(x_token)
+    if user.role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can have requests.")
+
+    if response == "approve":
+        response = True
+        answer = "approved"
+    else:
+        response = False
+        answer = "rejected"
+
+    courses_services.check_premium_limit_reached(data.sender_id)
+    courses_services.respond_to_request(data.course_id, data.sender_id, response)
+    emails = courses_services.show_pending_requests(user.user_id)
+    return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"
+            " {course title}"), emails
 
 
 @courses_router.post("/unsubscribe/id/{course_id}")

@@ -6,6 +6,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Truncate dependent tables
 TRUNCATE TABLE `e-learning`.`students_has_courses`;
 TRUNCATE TABLE `e-learning`.`students`;
+TRUNCATE TABLE `e-learning`.`teachers`;
 -- Truncate the primary table
 TRUNCATE TABLE `e-learning`.`users`;
 TRUNCATE TABLE `e-learning`.`courses`;
@@ -24,12 +25,23 @@ INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`passw
 INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('teacher', 'example6@asd.com', 'Anton', 'Antonov', 'password123');
 INSERT INTO `e-learning`.`users` (`role`,`email`,`first_name`,`last_name`,`password`) VALUES ('student', 'example7@asd.com', 'Tedo', 'Za', 'password123');
 
+INSERT INTO `e-learning`.`teachers` (`teacher_id`) VALUES ('2');
+INSERT INTO `e-learning`.`teachers` (`teacher_id`) VALUES ('4');
+INSERT INTO `e-learning`.`teachers` (`teacher_id`) VALUES ('7');
+
+INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('3');
+INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('4');
+INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('5');
+INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('8');
+
+
 -- --Courses examples for testing
 INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (2, 'Javascript level 1','Learn the basics of java','Learn java', 'java, javascript, level 1',1);
 INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (4, 'Python Programming', 'Learn Python programming language', 'Master Python basics and advanced concepts', 'python, programming, beginner', 0);
 INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (4, 'Web Development Fundamentals', 'Introduction to web development technologies', 'Understand HTML, CSS, and JavaScript basics', 'web development, html, css, javascript', 0);
 INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (7, 'Literature ', 'First steps in the world of literature', 'Get to know famous authors and their work', 'literature, authors, books', 0);
 INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (7, 'Supreme ', 'Everything', 'You cant ask for more', 'everything, everywhere all at once', 1);
+INSERT INTO `e-learning`.`courses` (`owner_id`, `title`,`description`,`objectives`,`tags`,`status`) VALUES (4, 'asdf', 'asdf', 'asdf', 'everything, everywhere all at once', 1);
 
 
 -- --Sections examples for testing
