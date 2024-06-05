@@ -5,12 +5,6 @@ from common import auth
 from fastapi import HTTPException, status, Header
 
 
-#Do we need if we can find user by token instead of just id?
-# def find_sender_id(x_token: str = Header(...)) -> int:
-#     user = decode_token(x_token)
-#     user_id = user.get('id')
-#     return user_id
-
 
 def guest_view():
     data = read_query('SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status '
@@ -51,7 +45,6 @@ def admin_view():
 def grab_any_course_by_id(course_id: int) -> Course:
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
                             FROM courses c WHERE course_id = {course_id}''')
-    # course = [Course.from_query_result(*row) for row in data]
     course = next((Course.from_query_result(*row) for row in data), None)
     if course:
         return course
@@ -140,6 +133,47 @@ def by_title_for_admin(course_title: str):
     return courses
 
 
+def by_tag_for_guest(tag: str):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.tags LIKE "%{tag}%" AND c.status = 0''')
+    courses = [Course.from_query_result(*row) for row in data]
+    return [course.to_guest_dict() for course in courses]
+
+
+def by_tag_for_student(tag: str, student_id: int):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.tags LIKE "%{tag}%" AND c.status = 0
+                        UNION ALL
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id
+                        WHERE c.tags LIKE "%{tag}%" AND c.status = 1 AND sc.user_id = {student_id}''')
+    courses = [Course.from_query_result(*row) for row in data]
+    return [course.to_student_dict() for course in courses]
+
+
+def by_tag_for_teacher(tag: str, teacher_id: int):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.tags LIKE "%{tag}%" AND c.status = 0
+                        UNION ALL
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.tags LIKE "%{tag}%" AND c.status = 1 AND c.owner_id = {teacher_id}''')
+    courses = [Course.from_query_result(*row) for row in data]
+    return [course.to_teacher_dict() for course in courses]
+
+
+def by_tag_for_admin(tag: str):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.tags LIKE "%{tag}%"''')
+    courses = [Course.from_query_result(*row) for row in data]
+    return courses
+
+
 def create_course(course: Course, owner_id: int) -> Course:
     generated_id = insert_query(
         'INSERT INTO courses(title, owner_id,description, objectives, tags, status) VALUES(?, ?, ?, ?, ?, ?)',
@@ -171,9 +205,6 @@ def delete_course(course_id: int, token: str):
                             FROM courses
                             WHERE courses.course_id = ?;''')
 
-    ###
-    # elif title is not None and user_role == "teacher":
-    #pass
 
     elif course_id is not None and user.role == "teacher":
         data = read_query(f'''SELECT * 
@@ -212,7 +243,6 @@ def check_premium_limit_reached(student_id: int):
 
 
 def update_course(data: dict, course_id: int):
-    #Can this be improved?
     for key, value in data.items():
         if type(value) is str:
             value = '"' + f'{value}' + '"'
@@ -290,15 +320,7 @@ def respond_to_request(course_id: int, student_id: int, response: bool):
         insert_query(f'''INSERT INTO students_has_courses(course_id, user_id) 
         VALUES({course_id},{student_id})''')
 
-        return "Student {} successfully ACCEPTED in course {}."
-
-    elif response:
-        return f"Student ID #{student_id} already ACCEPTED in course ID #{course_id}"
-
-    else:
+    elif not response and data:
         delete_query(f'''DELETE sc
                     FROM students_has_courses sc
                     WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
-
-        return f"Student ID #{student_id} successfully REJECTED from course ID #{course_id}"
-

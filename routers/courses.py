@@ -72,8 +72,8 @@ def experiment(data: dict):
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title')
-def show_courses_by_title(title: dict, x_token: str = Header(None)):
+@courses_router.get('/title/{course_title}')
+def show_courses_by_title(course_title, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
@@ -81,8 +81,6 @@ def show_courses_by_title(title: dict, x_token: str = Header(None)):
     else:
         user_role = None
         user_id = None
-
-    course_title = title.get('title')
 
     if user_role is None:
         courses_to_show = courses_services.by_title_for_guest(course_title)
@@ -107,7 +105,28 @@ def show_courses_by_title(title: dict, x_token: str = Header(None)):
 # Available to guests
 @courses_router.get('/tag/{tag}')
 def show_courses_by_tag(tag, x_token: str = Header()):
-    pass
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+        user_id = logged_user.user_id
+        user_role = logged_user.role
+    else:
+        user_role = None
+        user_id = None
+
+    if user_role is None:
+        courses_to_show = courses_services.by_tag_for_guest(tag)
+        return courses_to_show
+    if user_role == 'student':
+        courses_to_show = courses_services.by_tag_for_student(tag, user_id)
+        return courses_to_show
+    if user_role == 'teacher':
+        courses_to_show = courses_services.by_tag_for_teacher(tag, user_id)
+        return courses_to_show
+    if user_role == 'admin':
+        courses_to_show = courses_services.by_tag_for_admin(tag)
+        return courses_to_show
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 
 # Available to guests
