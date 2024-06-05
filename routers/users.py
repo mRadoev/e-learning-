@@ -57,9 +57,11 @@ def registration(data: User):
 @users_router.post('/login')
 def login(data: LoginData):
     user = try_login(data.email, data.password)
-    if user.role == 'teacher':
-        requests = courses_services.show_pending_requests(user.user_id)
+    requests = None  # Initialize requests before the if block
     if user:
+        if user.role == 'teacher':
+            requests = courses_services.show_pending_requests(user.user_id)
+
         # if login is successful, token is created
         token = create_token(user)
         if requests:

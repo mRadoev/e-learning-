@@ -19,17 +19,17 @@ class Role:
 
 class User(BaseModel):
     user_id: int | None = None
-    role: str = Field(..., pattern=r'^(admin|teacher|student|guest)$')  # Ensure the role is one of the valid strings
+    role: str = Field(..., pattern=r'^(admin|teacher|student|guest)$')
     email: str
     first_name: str
     last_name: str
-    password: str
+    password: str = "Password is hidden."
     photo: Optional[None] = None
     phone_number: Optional[str] = None
     linkedin: Optional[str] = None
 
     @classmethod
-    def from_query_result(cls, user_id, role, email, first_name, last_name, password):
+    def from_query_result(cls, user_id, role, email, first_name, last_name, password="Password is hidden."):
         return cls(
             user_id=user_id,
             role=role,
@@ -38,7 +38,6 @@ class User(BaseModel):
             last_name=last_name,
             password=password
         )
-
     class Config:
         arbitrary_types_allowed = True
 
