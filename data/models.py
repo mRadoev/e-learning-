@@ -33,10 +33,6 @@ class CustomPage(BaseModel):
         )
 
 
-# class CustomPage(Page):
-#     previous_page: Optional[str] = None
-#     next_page: Optional[str] = None
-
 
 class CustomParams(Params):
     size: int = 10

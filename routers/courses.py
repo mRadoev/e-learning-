@@ -9,9 +9,8 @@ from fastapi_pagination.utils import disable_installed_extensions_check
 
 disable_installed_extensions_check()
 
-
-
 courses_router = APIRouter(prefix='/courses')
+
 
 # Teachers can access all courses they own (only?)
 # Students can only view public courses and premium courses that they have access to(CourseHasUsers table)
@@ -42,30 +41,13 @@ def show_courses(request: Request, params: CustomParams = Depends(), x_token: Op
 
     # Create the custom page response
     custom_page = CustomPage.create(paginated_courses.items, paginated_courses.total, params)
-    previous_page_int = custom_page.previous_page
-    next_page_int = custom_page.next_page
-    custom_page.previous_page = f"{base_url}?page={previous_page_int}" if previous_page_int else None
-    custom_page.next_page = f"{base_url}?page={next_page_int}" if next_page_int else None
-    # previous_page = f"{base_url}?page={previous_page_int}&size={page_size}" if previous_page_int else None
-    # next_page = f"{base_url}?page={next_page_int}&size={page_size}" if next_page_int else None
+    previous_int = custom_page.previous_page
+    next_int = custom_page.next_page
+    custom_page.previous_page = f"{base_url}courses?page={previous_int}" if previous_int else "This is the first page"
+    custom_page.next_page = f"{base_url}courses?page={next_int}" if next_int else "This is the last page"
 
     return custom_page
-    # total_courses = len(courses)
-    # current_page = params.page
-    # page_size = params.size
-    # total_pages = (total_courses + page_size - 1) // page_size
-    #
-    # previous_page = current_page - 1 if current_page > 1 else None
-    # next_page = current_page + 1 if current_page < total_pages else None
-    #
-    # paginated_courses = paginate(courses, params)
-    # for page in paginated_courses:
-    #     CustomPage(page)
-    # paginated_courses.previous_page = previous_page
-    # paginated_courses.next_page = next_page
-    # #
-    # return paginated_courses
-    # return paginate(courses, params)
+
 
 #TO DO FIX CODE!!!
 # Only available to logged users
@@ -132,7 +114,6 @@ def show_courses_by_title(course_title, x_token: str = Header(None)):
     #
     # courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
     # return courses
-
 
 
 # Available to guests
@@ -207,12 +188,12 @@ def update_course(data: dict, course_id: int, x_token: str = Header()):
     course = courses_services.grab_any_course_by_id(course_id)
 
     if user.role != "teacher" or course.owner_id != user.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers that own the course can edit it!")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers that own the course can edit it!")
 
     courses_services.update_course(data, course_id)
 
     return "Course updated successfully!"
-
 
 
 # (only?)Students can enroll in up to 5 premium courses and unlimited public courses
@@ -269,6 +250,4 @@ def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...))
     result = courses_services.unsubscribe_from_course(user.user_id, course_id)
     return result
 
-
 # Students should be able to rate courses that they've enrolled in
-

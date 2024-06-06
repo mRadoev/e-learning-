@@ -9,12 +9,6 @@ from services.users_services import is_authenticated, give_user_info, find_by_em
 users_router = APIRouter(prefix='/users')
 
 
-#
-@users_router.get('/')
-def show_users(x_token: str = Header()):
-    pass
-
-
 @users_router.get('/id/{user_id}')
 def show_user_by_id(user_id: int, x_token: str = Header()):
     if is_authenticated(x_token):
