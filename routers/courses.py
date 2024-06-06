@@ -250,4 +250,32 @@ def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...))
     result = courses_services.unsubscribe_from_course(user.user_id, course_id)
     return result
 
+@courses_router.get("/id/{course_id}/users")
+def get_users_from_course(request: Request, course_id: int, params: CustomParams = Depends(), x_token: str =Header()):
+    base_url = str(request.base_url)
+    user = get_user_or_raise_401(x_token)
+    course = courses_services.grab_any_course_by_id(course_id)
+    if user.role == "admin":
+        users = courses_services.get_course_user_admin(course_id)
+
+    elif user.role == "teacher":
+        if course.owner_id != user.user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Only teachers who own the course can view its users.")
+        users = courses_services.get_course_user_teacher(course_id, user.user_id)
+
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers can view users in courses.")
+
+    paginated_users = paginate(users, params)
+
+    # Create the custom page response
+    custom_page = CustomPage.create(paginated_users.items, paginated_users.total, params)
+    previous_int = custom_page.previous_page
+    next_int = custom_page.next_page
+    custom_page.previous_page = f"{base_url}courses/id/{course_id}/users?page={previous_int}" if previous_int else "This is the first page"
+    custom_page.next_page = f"{base_url}courses/id/{course_id}/users?page={next_int}" if next_int else "This is the last page"
+
+    return custom_page
 # Students should be able to rate courses that they've enrolled in

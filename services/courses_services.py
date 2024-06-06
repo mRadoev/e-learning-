@@ -1,5 +1,5 @@
 from data.database import read_query, insert_query, delete_query, update_query
-from data.models import Course, Email  # CourseHasUsers
+from data.models import Course, Email, User # CourseHasUsers
 from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
@@ -112,17 +112,22 @@ def by_title_for_student(course_title: str, user_id: int):
     return [course.to_student_dict() for course in courses]
 
 
-def by_title_for_teacher(course_title: str, user_id: int):
-    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            WHERE title LIKE '%{course_title}%'
+def by_title_for_teacher(section_title: str, user_id: int):
+    data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description 
+                            FROM sections s
+                            JOIN courses c 
+                            ON s.course_id = c.course_id
+                            WHERE s.title LIKE '%{section_title}%' 
                             AND c.status = 0 
                             UNION ALL 
-                            SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c 
-                            WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND c.owner_id = {user_id};''')
-    courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_teacher_dict() for course in courses]
+                            SELECT s.section_id, s.course_id, s.title, s.content, s.description 
+                            FROM sections s 
+                            JOIN courses c 
+                            ON s.course_id = c.course_id 
+                            WHERE s.title LIKE '%{section_title}%' 
+                            AND c.status = 1 AND c.owner_id = {user_id};''')
+    sections = [Section.from_query_result(*row) for row in data]
+    return [section.to_teacher_dict() for section in sections]
 
 
 def by_title_for_admin(course_title: str):
@@ -324,3 +329,25 @@ def respond_to_request(course_id: int, student_id: int, response: bool):
         delete_query(f'''DELETE sc
                     FROM students_has_courses sc
                     WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+
+def get_course_user_admin(course_id: int):
+    data = read_query(f'''SELECT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password 
+                    FROM users u 
+                    JOIN students_has_courses sc 
+                    ON u.user_id = sc.user_id 
+                    WHERE sc.course_id = {course_id}''')
+
+    users = [User.from_query_result(*row) for row in data]
+    return users
+
+def get_course_user_teacher(course_id: int, user_id: int):
+    data = read_query(f'''SELECT DISTINCT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password
+                    FROM users u
+                    JOIN students_has_courses sc
+                    JOIN courses c
+                    ON u.user_id = sc.user_id 
+                    WHERE sc.course_id = {course_id}
+                    AND c.owner_id = {user_id}''')
+
+    users = [User.from_query_result(*row) for row in data]
+    return users

@@ -33,6 +33,7 @@ def show_sections(x_token: Optional[str] = Header(None)):
 
     return courses
 
+
 #Content can be made not visible, because it's supposed to be long text, so instead by searching
 #for the section by id or name you can view the full content of the section.
 @sections_router.get('/id/{section_id}')
@@ -42,7 +43,28 @@ def show_section_by_id(section_id, x_token: str = Header()):
 
 @sections_router.get('/title/{section_title}')
 def show_section_by_title(section_title, x_token: str = Header()):
-    pass
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+        user_id = logged_user.user_id
+        user_role = logged_user.role
+    else:
+        user_role = None
+        user_id = None
+
+    if user_role is None:
+        sections_to_show = sections_services.by_title_for_guest(section_title)
+        return sections_to_show
+    if user_role == 'student':
+        sections_to_show = sections_services.by_title_for_student(section_title, user_id)
+        return sections_to_show
+    if user_role == 'teacher':
+        sections_to_show = sections_services.by_title_for_teacher(section_title, user_id)
+        return sections_to_show
+    elif user_role == 'admin':
+        sections_to_show = sections_services.by_title_for_admin(section_title)
+        return sections_to_show
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 
 #Only teachers that own the course can create new sections for it and update it

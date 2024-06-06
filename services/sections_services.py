@@ -80,3 +80,55 @@ def create_section(section):
     section.section_id = generated_id
 
     return section
+
+
+def by_title_for_guest(section_title: str):
+    data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description
+                        FROM sections s
+                        JOIN courses c
+                        ON s.course_id = c.course_id
+                        WHERE s.title LIKE '%{section_title}%'
+                        AND c.status = 0''')
+    sections = [Section.from_query_result(*row) for row in data]
+    return [section.to_guest_dict() for section in sections]
+
+
+def by_title_for_student(section_title: str, user_id: int):
+    data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description
+                        FROM sections s
+                        JOIN courses c ON s.course_id = c.course_id
+                        WHERE s.title LIKE '%{section_title}%'
+                        AND c.status = 0 
+                        UNION ALL 
+                        SELECT s.section_id, s.course_id, s.title, s.content, s.description
+                        FROM sections s
+                        JOIN courses c ON s.course_id = c.course_id
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id 
+                        WHERE s.title LIKE '%{section_title}%' AND c.status = 1 AND sc.user_id = {user_id};''')
+    sections = [Section.from_query_result(*row) for row in data]
+    return [section.to_student_dict() for section in sections]
+
+
+def by_title_for_teacher(section_title: str, user_id: int):
+    data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description
+                        FROM sections s
+                        JOIN courses c ON s.course_id = c.course_id
+                        WHERE s.title LIKE '%{section_title}%'
+                        AND c.status = 0 
+                        UNION ALL 
+                        SELECT s.section_id, s.course_id, s.title, s.content, s.description 
+                        FROM sections s 
+                        JOIN courses c 
+                        ON s.course_id = c.course_id 
+                        WHERE s.title LIKE '%{section_title}%' 
+                        AND c.status = 1 AND c.owner_id = {user_id};''')
+    sections = [Section.from_query_result(*row) for row in data]
+    return [section.to_teacher_dict() for section in sections]
+
+
+def by_title_for_admin(section_title: str):
+    data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description
+                        FROM sections s 
+                        WHERE s.title LIKE "%{section_title}%"''')
+    sections = [Section.from_query_result(*row) for row in data]
+    return sections
