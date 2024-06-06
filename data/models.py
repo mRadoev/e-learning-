@@ -6,9 +6,36 @@ from fastapi_pagination import Params, Page
 TUsername = constr(pattern=r'^\w{2,30}$')
 
 
-class CustomPage(Page):
-    previous_page: Optional[str] = None
-    next_page: Optional[str] = None
+class CustomPage(BaseModel):
+    items: list
+    total: int
+    page: int
+    size: int
+    previous_page: Optional[int] = None
+    next_page: Optional[int] = None
+
+    @classmethod
+    def create(cls, items: [], total: int, params: Params):
+        current_page = params.page
+        page_size = params.size
+        total_pages = (total + page_size - 1) // page_size
+
+        previous_page = current_page - 1 if current_page > 1 else None
+        next_page = current_page + 1 if current_page < total_pages else None
+
+        return cls(
+            items=items,
+            total=total,
+            page=current_page,
+            size=page_size,
+            previous_page=previous_page,
+            next_page=next_page
+        )
+
+
+# class CustomPage(Page):
+#     previous_page: Optional[str] = None
+#     next_page: Optional[str] = None
 
 
 class CustomParams(Params):
@@ -48,6 +75,7 @@ class User(BaseModel):
             last_name=last_name,
             password=password
         )
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -60,6 +88,7 @@ class Course(BaseModel):
     objectives: str
     tags: str
     status: int = 0  # 0 = public, 1 = premium
+
     # student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
 
     def to_guest_dict(self):
@@ -72,7 +101,6 @@ class Course(BaseModel):
         return self.dict(
             include={'course_id', 'title', 'description', 'objectives', 'owner_id', 'tags', 'status'})
 
-
     @classmethod
     def from_query_result(cls, course_id, owner_id, title, description, objectives, tags, status):
         return cls(
@@ -84,7 +112,6 @@ class Course(BaseModel):
             tags=tags,
             status=status
         )
-
 
     class Config:
         arbitrary_types_allowed = True
@@ -125,10 +152,9 @@ class Email(BaseModel):
         return cls(email_id=email_id, sender_id=sender_id,
                    recipient_id=recipient_id, course_id=course_id, response=response)
 
-                          # class Student:
+        # class Student:
 
 # class Teacher:
-
 
 
 # class Message(BaseModel):

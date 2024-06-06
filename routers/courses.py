@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException, Header, Depends
+from fastapi import APIRouter, status, HTTPException, Header, Depends, Request
 from data.models import Course, Role, Email, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from typing import Optional
@@ -18,8 +18,9 @@ courses_router = APIRouter(prefix='/courses')
 # Guests can only view public courses
 
 
-@courses_router.get('/', response_model=CustomPage[Course])
-def show_courses(params: CustomParams = Depends(), x_token: Optional[str] = Header(None)):
+@courses_router.get('/', response_model=CustomPage)
+def show_courses(request: Request, params: CustomParams = Depends(), x_token: Optional[str] = Header(None)):
+    base_url = str(request.base_url)
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
@@ -36,6 +37,19 @@ def show_courses(params: CustomParams = Depends(), x_token: Optional[str] = Head
         courses = courses_services.teacher_view(logged_user.user_id)
     else:
         return "There are no courses you can view!"
+
+    paginated_courses = paginate(courses, params)
+
+    # Create the custom page response
+    custom_page = CustomPage.create(paginated_courses.items, paginated_courses.total, params)
+    previous_page_int = custom_page.previous_page
+    next_page_int = custom_page.next_page
+    custom_page.previous_page = f"{base_url}?page={previous_page_int}" if previous_page_int else None
+    custom_page.next_page = f"{base_url}?page={next_page_int}" if next_page_int else None
+    # previous_page = f"{base_url}?page={previous_page_int}&size={page_size}" if previous_page_int else None
+    # next_page = f"{base_url}?page={next_page_int}&size={page_size}" if next_page_int else None
+
+    return custom_page
     # total_courses = len(courses)
     # current_page = params.page
     # page_size = params.size
@@ -43,16 +57,15 @@ def show_courses(params: CustomParams = Depends(), x_token: Optional[str] = Head
     #
     # previous_page = current_page - 1 if current_page > 1 else None
     # next_page = current_page + 1 if current_page < total_pages else None
-
+    #
     # paginated_courses = paginate(courses, params)
-    # courses = []
     # for page in paginated_courses:
-    #     courses = CustomPage(page)
+    #     CustomPage(page)
     # paginated_courses.previous_page = previous_page
     # paginated_courses.next_page = next_page
     # #
     # return paginated_courses
-    return paginate(courses, params)
+    # return paginate(courses, params)
 
 #TO DO FIX CODE!!!
 # Only available to logged users
