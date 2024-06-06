@@ -38,7 +38,7 @@ def teacher_view(user_id: int):
 
 def admin_view():
     data = read_query('''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses''')
+                            FROM courses c ''')
     return [Course.from_query_result(*row) for row in data]
 
 

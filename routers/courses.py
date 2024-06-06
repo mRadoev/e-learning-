@@ -1,9 +1,14 @@
-from fastapi import APIRouter, status, HTTPException, Header
-from data.models import Course, Role, Email
+from fastapi import APIRouter, status, HTTPException, Header, Depends
+from data.models import Course, Role, Email, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from typing import Optional
 from services import courses_services
+from fastapi_pagination import Page, Params, paginate
 from services.users_services import decode_token
+from fastapi_pagination.utils import disable_installed_extensions_check
+
+disable_installed_extensions_check()
+
 
 
 courses_router = APIRouter(prefix='/courses')
@@ -13,8 +18,8 @@ courses_router = APIRouter(prefix='/courses')
 # Guests can only view public courses
 
 
-@courses_router.get('/')
-def show_courses(x_token: Optional[str] = Header(None)):
+@courses_router.get('/', response_model=CustomPage[Course])
+def show_courses(params: CustomParams = Depends(), x_token: Optional[str] = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
@@ -31,8 +36,23 @@ def show_courses(x_token: Optional[str] = Header(None)):
         courses = courses_services.teacher_view(logged_user.user_id)
     else:
         return "There are no courses you can view!"
+    # total_courses = len(courses)
+    # current_page = params.page
+    # page_size = params.size
+    # total_pages = (total_courses + page_size - 1) // page_size
+    #
+    # previous_page = current_page - 1 if current_page > 1 else None
+    # next_page = current_page + 1 if current_page < total_pages else None
 
-    return courses
+    # paginated_courses = paginate(courses, params)
+    # courses = []
+    # for page in paginated_courses:
+    #     courses = CustomPage(page)
+    # paginated_courses.previous_page = previous_page
+    # paginated_courses.next_page = next_page
+    # #
+    # return paginated_courses
+    return paginate(courses, params)
 
 #TO DO FIX CODE!!!
 # Only available to logged users

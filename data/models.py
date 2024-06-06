@@ -1,8 +1,18 @@
 from datetime import datetime
 from pydantic import BaseModel, constr, Field
 from typing import List, Optional
+from fastapi_pagination import Params, Page
 
 TUsername = constr(pattern=r'^\w{2,30}$')
+
+
+class CustomPage(Page):
+    previous_page: Optional[str] = None
+    next_page: Optional[str] = None
+
+
+class CustomParams(Params):
+    size: int = 10
 
 
 class LoginData(BaseModel):
