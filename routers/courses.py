@@ -286,4 +286,19 @@ def get_users_from_course(request: Request, course_id: int, params: CustomParams
         "previous_page": previous_page,
         "next_page": next_page,
     })
+
+
+@courses_router.get("/report/id/{course_id}")
+def generate_report(course_id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+    course = courses_services.grab_any_course_by_id(course_id)
+    if user.role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers can generate reports.")
+    if user.user_id != course.owner_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers that own the course can generate report for it.")
+
+    report = courses_services.generate_report(course_id)
+    return report
 # Students should be able to rate courses that they've enrolled in

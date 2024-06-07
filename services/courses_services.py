@@ -355,11 +355,13 @@ def get_course_user_teacher(course_id: int, user_id: int):
     return users
 
 
+#Report needs to indicate which students are still enrolled and which aren't
 def generate_report(course_id: int):
     data = read_query(f'''SELECT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password
                     FROM users u
                     JOIN students_has_courses sc ON sc.user_id = u.user_id
-                    WHERE sc.course_id = {course_id}''')
+                    WHERE sc.course_id = {course_id}
+                    ORDER BY sc.subscription_status''')
 
     users = [User.from_query_result(*row) for row in data]
     return users
