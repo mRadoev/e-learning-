@@ -143,6 +143,7 @@ def show_courses_by_tag(tag, x_token: str = Header()):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 
+#Will show all courses for guests and users by either ascending or descending order
 # Available to guests
 @courses_router.get('/rating/{rating}')
 def show_courses_by_rating(rating, x_token: str = Header()):
@@ -250,8 +251,9 @@ def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...))
     result = courses_services.unsubscribe_from_course(user.user_id, course_id)
     return result
 
+
 @courses_router.get("/id/{course_id}/users")
-def get_users_from_course(request: Request, course_id: int, params: CustomParams = Depends(), x_token: str =Header()):
+def get_users_from_course(request: Request, course_id: int, params: CustomParams = Depends(), x_token: str = Header()):
     base_url = str(request.base_url)
     user = get_user_or_raise_401(x_token)
     course = courses_services.grab_any_course_by_id(course_id)
@@ -278,4 +280,19 @@ def get_users_from_course(request: Request, course_id: int, params: CustomParams
     custom_page.next_page = f"{base_url}courses/id/{course_id}/users?page={next_int}" if next_int else "This is the last page"
 
     return custom_page
+
+
+@courses_router.get("/report/id/{course_id}")
+def generate_report(course_id: int, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+    course = courses_services.grab_any_course_by_id(course_id)
+    if user.role != "teacher":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers can generate reports.")
+    if user.user_id != course.owner_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers that own the course can generate report for it.")
+
+    report = courses_services.generate_report(course_id)
+    return report
 # Students should be able to rate courses that they've enrolled in

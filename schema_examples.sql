@@ -30,8 +30,8 @@ INSERT INTO `e-learning`.`teachers` (`teacher_id`) VALUES ('4');
 INSERT INTO `e-learning`.`teachers` (`teacher_id`) VALUES ('7');
 
 INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('3');
-INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('4');
 INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('5');
+INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('6');
 INSERT INTO `e-learning`.`students` (`student_id`) VALUES ('8');
 
 

@@ -33,7 +33,6 @@ class CustomPage(BaseModel):
         )
 
 
-
 class CustomParams(Params):
     size: int = 10
 
@@ -49,7 +48,7 @@ class Role:
     STUDENT = 'student'
     GUEST = 'guest'
 
-
+#Verify if this User class is looking like it should
 class User(BaseModel):
     user_id: int | None = None
     role: str = Field(..., pattern=r'^(admin|teacher|student|guest)$')

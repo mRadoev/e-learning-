@@ -1,9 +1,8 @@
 from data.database import read_query, insert_query, delete_query, update_query
-from data.models import Course, Email, User # CourseHasUsers
+from data.models import Course, Email, User  # CourseHasUsers
 from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
-
 
 
 def guest_view():
@@ -238,13 +237,13 @@ def delete_course(course_id: int, token: str):
 def check_premium_limit_reached(student_id: int):
     data = read_query(f'''SELECT course_id
                         FROM students_has_courses sc
-                        WHERE sc.user_id = {student_id}''')
+                        WHERE sc.user_id = {student_id}''')  #AND sc.status = 1
     premium_courses = 0
     for row in data:
         premium_courses += 1
     if premium_courses >= 5:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                             detail="You have reached your premium course enrollment limit of 5")
+                            detail="You have reached your premium course enrollment limit of 5")
 
 
 def update_course(data: dict, course_id: int):
@@ -314,6 +313,7 @@ def show_pending_requests(user_id):
     return emails
 
 
+################################# Test
 def respond_to_request(course_id: int, student_id: int, response: bool):
     data = read_query(f'''SELECT * 
                     FROM students_has_courses sc 
@@ -322,13 +322,14 @@ def respond_to_request(course_id: int, student_id: int, response: bool):
                     SET e.response = {response}
                     WHERE e.sender_id = {student_id} AND e.course_id = {course_id}''')
     if response and not data:
-        insert_query(f'''INSERT INTO students_has_courses(course_id, user_id) 
-        VALUES({course_id},{student_id})''')
+        insert_query(f'''INSERT INTO students_has_courses(course_id, user_id, subscription_status) 
+        VALUES({course_id}, {student_id}, 1)''')
 
     elif not response and data:
-        delete_query(f'''DELETE sc
-                    FROM students_has_courses sc
+        update_query(f'''UPDATE students_has_courses sc
+                    SET sc.subscription_status = 0
                     WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+
 
 def get_course_user_admin(course_id: int):
     data = read_query(f'''SELECT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password 
@@ -340,6 +341,7 @@ def get_course_user_admin(course_id: int):
     users = [User.from_query_result(*row) for row in data]
     return users
 
+
 def get_course_user_teacher(course_id: int, user_id: int):
     data = read_query(f'''SELECT DISTINCT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password
                     FROM users u
@@ -348,6 +350,16 @@ def get_course_user_teacher(course_id: int, user_id: int):
                     ON u.user_id = sc.user_id 
                     WHERE sc.course_id = {course_id}
                     AND c.owner_id = {user_id}''')
+
+    users = [User.from_query_result(*row) for row in data]
+    return users
+
+
+def generate_report(course_id: int):
+    data = read_query(f'''SELECT u.user_id, u.role, u.email, u.first_name, u.last_name, u.password
+                    FROM users u
+                    JOIN students_has_courses sc ON sc.user_id = u.user_id
+                    WHERE sc.course_id = {course_id}''')
 
     users = [User.from_query_result(*row) for row in data]
     return users
