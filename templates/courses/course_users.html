@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Course Users</title>
+    <script>
+        function getCourseUsers() {
+            const courseId = document.getElementById("course_id").value;
+            const token = localStorage.getItem('token');
+
+            fetch(`http://127.0.0.1:8000/courses/id/${courseId}/users`, {
+                headers: {
+                    'x-token': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the data, e.g., display users
+                console.log(data);
+                const usersList = document.getElementById("usersList");
+                usersList.innerHTML = "";
+                data.items.forEach(user => {
+                    const li = document.createElement("li");
+                    li.textContent = `ID: ${user.id}, Name: ${user.name}`;
+                    usersList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>View Course Users</h1>
+    <form onsubmit="event.preventDefault(); getCourseUsers();">
+        <label for="course_id">Course ID:</label>
+        <input type="number" id="course_id" required>
+        <br>
+        <button type="submit">View Users</button>
+    </form>
+    <ul id="usersList"></ul>
+</body>
+</html>

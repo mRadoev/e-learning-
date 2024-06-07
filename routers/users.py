@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, HTTPException, Header, Request
+from fastapi import APIRouter, Response, HTTPException, Header, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from common.auth import get_user_or_raise_401
@@ -11,7 +11,7 @@ users_router = APIRouter(prefix='/users')
 templates = Jinja2Templates(directory="templates")
 
 
-@users_router.get("/registration", response_class=HTMLResponse)
+@users_router.get("/registration_form", response_class=HTMLResponse)
 async def get_register_form(request: Request):
     return templates.TemplateResponse("users/register.html", {"request": request})
 
@@ -58,9 +58,12 @@ async def register(request: Request):
     else:
         raise HTTPException(status_code=500, detail="Failed to register user")
 
+@users_router.get("/login_form", response_class=HTMLResponse)
+async def get_login_form(request: Request):
+    return templates.TemplateResponse("users/login.html", {"request": request})
 
 @users_router.post('/login', response_class=HTMLResponse)
-def login(request: Request, email: str, password: str):
+async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     user = try_login(email, password)
     requests = None
     if user:
@@ -68,8 +71,11 @@ def login(request: Request, email: str, password: str):
             requests = courses_services.show_pending_requests(user.user_id)
 
         token = create_token(user)
-        response = templates.TemplateResponse('users/login_success.html', {"request": request, "requests": requests})
-        response.set_cookie(key="token", value=token)
+        # Return the token in the response body
+        response = templates.TemplateResponse(
+            'users/login_success.html',
+            {"request": request, "requests": requests, "token": token}
+        )
         return response
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
