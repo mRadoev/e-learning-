@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Login Successful{% endblock %}
+
+{% block content %}
+<h1>Login Successful</h1>
+<p>You have logged in successfully.</p>
+{% if requests %}
+    <p>You have pending enrollment requests!</p>
+{% endif %}
+{% endblock %}
