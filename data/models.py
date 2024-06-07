@@ -120,8 +120,18 @@ class Section(BaseModel):
     description: str = "No description given yet"
     link: str = "No link given yet"
 
+    def to_guest_dict(self):
+        return self.dict(include={'course_id', 'section_id', 'title', 'description'})
+
+    def to_student_dict(self):
+        return self.dict(include={'course_id', 'section_id', 'title', 'content', 'description'})
+
+    def to_teacher_dict(self):
+        return self.dict(
+            include={'course_id', 'section_id', 'title', 'content', 'description'}
+        )
     @classmethod
-    def from_query_result(cls, course_id, section_id, title, content, description, link):
+    def from_query_result(cls, course_id, section_id, title, content, description, link="No link given yet"):
         return cls(
             course_id=course_id,
             section_id=section_id,

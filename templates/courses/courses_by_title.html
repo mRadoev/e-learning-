@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Courses{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Courses</h1>
+    </header>
+    <main>
+        <form action="/courses/title/" method="get">
+            <label for="search">Search by Course Title:</label>
+            <input type="text" id="search" name="search">
+            <button type="submit">Search</button>
+        </form>
+        {% if course_title %}
+            <h2>{{ course_title }}</h2>
+        {% endif %}
+        {% if courses %}
+            <ul>
+                {% for course in courses %}
+                    <li>
+                        <h3>{{ course.title }}</h3>
+                        <p>Description: {{ course.description }}</p>
+                        <!-- Add more details as needed -->
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No courses found.</p>
+        {% endif %}
+    </main>
+    <footer>
+        <p>&copy; 2024 My App</p>
+    </footer>
+</body>
+</html>

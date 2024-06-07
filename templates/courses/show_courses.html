@@ -1,0 +1,26 @@
+<!-- templates/courses.html -->
+{% extends "base.html" %}
+
+{% block title %}Courses{% endblock %}
+
+{% block content %}
+<h1>Courses</h1>
+<ul>
+  {% for course in courses %}
+  <li>
+    <h2>{{ course.title }}</h2>
+    <p>Description: {{ course.description }}</p>
+    <p>Objectives: {{ course.objectives }}</p>
+    <p>Tags: {{ course.tags }}</p>
+    <!-- You can display other details of the course here -->
+  </li>
+  {% endfor %}
+</ul>
+<!-- Pagination links -->
+{% if custom_page.previous_page != "This is the first page" %}
+<a href="{{ custom_page.previous_page }}">Previous</a>
+{% endif %}
+{% if custom_page.next_page != "This is the last page" %}
+<a href="{{ custom_page.next_page }}">Next</a>
+{% endif %}
+{% endblock %}

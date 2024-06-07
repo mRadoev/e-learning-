@@ -125,7 +125,7 @@ def by_title_for_teacher(section_title: str, user_id: int):
                             ON s.course_id = c.course_id 
                             WHERE s.title LIKE '%{section_title}%' 
                             AND c.status = 1 AND c.owner_id = {user_id};''')
-    sections = [Section.from_query_result(*row) for row in data]
+    sections = [Course.from_query_result(*row) for row in data]
     return [section.to_teacher_dict() for section in sections]
 
 

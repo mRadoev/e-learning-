@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Response, status, HTTPException, Header, Query
-from data.models import Section, Course, Role
+from fastapi import APIRouter, Response, status, HTTPException, Header, Depends, Request
+from data.models import Section, Course, Role, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from services import sections_services
+from fastapi_pagination import Page, Params, paginate
 from typing import Optional
 from services import courses_services
 
@@ -41,30 +42,43 @@ def show_section_by_id(section_id, x_token: str = Header()):
     pass
 
 
-@sections_router.get('/title/{section_title}')
-def show_section_by_title(section_title, x_token: str = Header()):
+@sections_router.get('/title/{section_title}', response_model=CustomPage)
+def show_section_by_title(
+    section_title: str,
+    request: Request,
+    params: CustomParams = Depends(),
+    x_token: Optional[str] = Header(None)
+):
+    base_url = str(request.base_url)
+    user_role = None
+    user_id = None
+
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
         user_role = logged_user.role
-    else:
-        user_role = None
-        user_id = None
 
     if user_role is None:
         sections_to_show = sections_services.by_title_for_guest(section_title)
-        return sections_to_show
-    if user_role == 'student':
+    elif user_role == 'student':
         sections_to_show = sections_services.by_title_for_student(section_title, user_id)
-        return sections_to_show
-    if user_role == 'teacher':
+    elif user_role == 'teacher':
         sections_to_show = sections_services.by_title_for_teacher(section_title, user_id)
-        return sections_to_show
     elif user_role == 'admin':
         sections_to_show = sections_services.by_title_for_admin(section_title)
-        return sections_to_show
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+    paginated_sections = paginate(sections_to_show, params)
+
+    # Create the custom page response
+    custom_page = CustomPage.create(paginated_sections.items, paginated_sections.total, params)
+    previous_int = custom_page.previous_page
+    next_int = custom_page.next_page
+    custom_page.previous_page = f"{base_url}sections/title/{section_title}?page={previous_int}" if previous_int else None
+    custom_page.next_page = f"{base_url}sections/title/{section_title}?page={next_int}" if next_int else None
+
+    return custom_page
 
 
 #Only teachers that own the course can create new sections for it and update it

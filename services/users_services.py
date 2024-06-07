@@ -11,11 +11,6 @@ from flask import session
 
 # _SEPARATOR = ';'
 
-# passwords should be secured as hashstrings in DB
-# def _hash_password(password: str):
-#     from hashlib import sha256
-#     return sha256(password.encode('utf-8')).hexdigest()
-
 def find_by_id(user_id: int) -> User | None:
     data = read_query(
         f'SELECT user_id, role, email, first_name, last_name, password FROM users WHERE user_id = {user_id}')

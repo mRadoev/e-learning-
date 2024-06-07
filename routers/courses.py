@@ -1,4 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Header, Depends, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from data.models import Course, Role, Email, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from typing import Optional
@@ -8,7 +10,7 @@ from services.users_services import decode_token
 from fastapi_pagination.utils import disable_installed_extensions_check
 
 disable_installed_extensions_check()
-
+templates = Jinja2Templates(directory="templates")
 courses_router = APIRouter(prefix='/courses')
 
 
@@ -17,15 +19,14 @@ courses_router = APIRouter(prefix='/courses')
 # Guests can only view public courses
 
 
-@courses_router.get('/', response_model=CustomPage)
+@courses_router.get('/', response_class=HTMLResponse)
 def show_courses(request: Request, params: CustomParams = Depends(), x_token: Optional[str] = Header(None)):
-    base_url = str(request.base_url)
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
         logged_user = None
 
-    # all public courses and the courses which the logged user has access to
+    # Retrieve courses based on user role or guest status
     if not logged_user:
         courses = courses_services.guest_view()
     elif logged_user.role == Role.STUDENT:
@@ -37,16 +38,13 @@ def show_courses(request: Request, params: CustomParams = Depends(), x_token: Op
     else:
         return "There are no courses you can view!"
 
+    # Paginate courses
     paginated_courses = paginate(courses, params)
 
     # Create the custom page response
     custom_page = CustomPage.create(paginated_courses.items, paginated_courses.total, params)
-    previous_int = custom_page.previous_page
-    next_int = custom_page.next_page
-    custom_page.previous_page = f"{base_url}courses?page={previous_int}" if previous_int else "This is the first page"
-    custom_page.next_page = f"{base_url}courses?page={next_int}" if next_int else "This is the last page"
 
-    return custom_page
+    return templates.TemplateResponse("courses/show_courses.html", {"request": request, "courses": paginated_courses.items, "custom_page": custom_page})
 
 
 #TO DO FIX CODE!!!
@@ -87,8 +85,8 @@ def experiment(data: dict):
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title/{course_title}')
-def show_courses_by_title(course_title, x_token: str = Header(None)):
+@courses_router.get('/title/')
+def show_courses_by_title(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
@@ -97,28 +95,31 @@ def show_courses_by_title(course_title, x_token: str = Header(None)):
         user_role = None
         user_id = None
 
-    if user_role is None:
-        courses_to_show = courses_services.by_title_for_guest(course_title)
-        return courses_to_show
-    if user_role == 'student':
-        courses_to_show = courses_services.by_title_for_student(course_title, user_id)
-        return courses_to_show
-    if user_role == 'teacher':
-        courses_to_show = courses_services.by_title_for_teacher(course_title, user_id)
-        return courses_to_show
-    elif user_role == 'admin':
-        courses_to_show = courses_services.by_title_for_admin(course_title)
-        return courses_to_show
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    course_title = None
+    courses_to_show = None
+
+    if search:
+        course_title = search
+        if user_role is None:
+            courses_to_show = courses_services.by_title_for_guest(course_title)
+        elif user_role == 'student':
+            courses_to_show = courses_services.by_title_for_student(course_title, user_id)
+        elif user_role == 'teacher':
+            courses_to_show = courses_services.by_title_for_teacher(course_title, user_id)
+        elif user_role == 'admin':
+            courses_to_show = courses_services.by_title_for_admin(course_title)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+    return templates.TemplateResponse("courses/courses_by_title.html", {"request": request, "course_title": course_title, "courses": courses_to_show})
     #
     # courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
     # return courses
 
 
 # Available to guests
-@courses_router.get('/tag/{tag}')
-def show_courses_by_tag(tag, x_token: str = Header()):
+@courses_router.get('/tag/')
+def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
@@ -127,23 +128,24 @@ def show_courses_by_tag(tag, x_token: str = Header()):
         user_role = None
         user_id = None
 
-    if user_role is None:
-        courses_to_show = courses_services.by_tag_for_guest(tag)
-        return courses_to_show
-    if user_role == 'student':
-        courses_to_show = courses_services.by_tag_for_student(tag, user_id)
-        return courses_to_show
-    if user_role == 'teacher':
-        courses_to_show = courses_services.by_tag_for_teacher(tag, user_id)
-        return courses_to_show
-    if user_role == 'admin':
-        courses_to_show = courses_services.by_tag_for_admin(tag)
-        return courses_to_show
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    tag = None
+    courses_to_show = None
 
+    if search:
+        tag = search
+        if user_role is None:
+            courses_to_show = courses_services.by_tag_for_guest(tag)
+        elif user_role == 'student':
+            courses_to_show = courses_services.by_tag_for_student(tag, user_id)
+        elif user_role == 'teacher':
+            courses_to_show = courses_services.by_tag_for_teacher(tag, user_id)
+        elif user_role == 'admin':
+            courses_to_show = courses_services.by_tag_for_admin(tag)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-#Will show all courses for guests and users by either ascending or descending order
+    return templates.TemplateResponse("courses/courses_by_tag.html", {"request": request, "tag": tag, "courses": courses_to_show})
+
 # Available to guests
 @courses_router.get('/rating/{rating}')
 def show_courses_by_rating(rating, x_token: str = Header()):
@@ -252,47 +254,36 @@ def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...))
     return result
 
 
-@courses_router.get("/id/{course_id}/users")
+@courses_router.get("/id/{course_id}/users", response_class=HTMLResponse)
 def get_users_from_course(request: Request, course_id: int, params: CustomParams = Depends(), x_token: str = Header()):
     base_url = str(request.base_url)
     user = get_user_or_raise_401(x_token)
     course = courses_services.grab_any_course_by_id(course_id)
+
     if user.role == "admin":
         users = courses_services.get_course_user_admin(course_id)
-
     elif user.role == "teacher":
         if course.owner_id != user.user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail="Only teachers who own the course can view its users.")
         users = courses_services.get_course_user_teacher(course_id, user.user_id)
-
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Only teachers can view users in courses.")
 
     paginated_users = paginate(users, params)
-
-    # Create the custom page response
     custom_page = CustomPage.create(paginated_users.items, paginated_users.total, params)
+
     previous_int = custom_page.previous_page
     next_int = custom_page.next_page
-    custom_page.previous_page = f"{base_url}courses/id/{course_id}/users?page={previous_int}" if previous_int else "This is the first page"
-    custom_page.next_page = f"{base_url}courses/id/{course_id}/users?page={next_int}" if next_int else "This is the last page"
+    previous_page = f"{base_url}courses/id/{course_id}/users?page={previous_int}" if previous_int else "This is the first page"
+    next_page = f"{base_url}courses/id/{course_id}/users?page={next_int}" if next_int else "This is the last page"
 
-    return custom_page
-
-
-@courses_router.get("/report/id/{course_id}")
-def generate_report(course_id: int, x_token: str = Header()):
-    user = get_user_or_raise_401(x_token)
-    course = courses_services.grab_any_course_by_id(course_id)
-    if user.role != "teacher":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Only teachers can generate reports.")
-    if user.user_id != course.owner_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Only teachers that own the course can generate report for it.")
-
-    report = courses_services.generate_report(course_id)
-    return report
+    return templates.TemplateResponse("courses/course_users.html", {
+        "request": request,
+        "course_id": course_id,
+        "users": paginated_users.items,
+        "previous_page": previous_page,
+        "next_page": next_page,
+    })
 # Students should be able to rate courses that they've enrolled in
