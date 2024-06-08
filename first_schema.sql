@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`courses` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = latin1;
 
 
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`emails` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-AUTO_INCREMENT = 11
+AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = latin1;
 
 
@@ -149,7 +149,9 @@ DEFAULT CHARACTER SET = latin1;
 CREATE TABLE IF NOT EXISTS `e-learning`.`students_has_courses` (
   `course_id` INT(11) NOT NULL,
   `user_id` INT(11) NOT NULL,
-  `subscription_status` TINYINT NOT NULL,
+  `subscription_status` TINYINT(4) NOT NULL,
+  `enrollment_date` DATETIME NOT NULL,
+  `unenrollment_date` DATETIME NULL,
   `student_rating` INT(11) NULL DEFAULT NULL,
   PRIMARY KEY (`course_id`, `user_id`),
   INDEX `fk_courses_has_students_students1_idx` (`user_id` ASC) ,

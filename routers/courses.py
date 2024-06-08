@@ -44,7 +44,9 @@ def show_courses(request: Request, params: CustomParams = Depends(), x_token: Op
     # Create the custom page response
     custom_page = CustomPage.create(paginated_courses.items, paginated_courses.total, params)
 
-    return templates.TemplateResponse("courses/show_courses.html", {"request": request, "courses": paginated_courses.items, "custom_page": custom_page})
+    return templates.TemplateResponse("courses/show_courses.html",
+                                      {"request": request, "courses": paginated_courses.items,
+                                       "custom_page": custom_page})
 
 
 #TO DO FIX CODE!!!
@@ -111,7 +113,8 @@ def show_courses_by_title(request: Request, search: str = None, x_token: str = H
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-    return templates.TemplateResponse("courses/courses_by_title.html", {"request": request, "course_title": course_title, "courses": courses_to_show})
+    return templates.TemplateResponse("courses/courses_by_title.html",
+                                      {"request": request, "course_title": course_title, "courses": courses_to_show})
     #
     # courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
     # return courses
@@ -144,7 +147,9 @@ def show_courses_by_tag(request: Request, search: str = None, x_token: str = Hea
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
-    return templates.TemplateResponse("courses/courses_by_tag.html", {"request": request, "tag": tag, "courses": courses_to_show})
+    return templates.TemplateResponse("courses/courses_by_tag.html",
+                                      {"request": request, "tag": tag, "courses": courses_to_show})
+
 
 # Available to guests
 @courses_router.get('/rating/{rating}')
@@ -238,10 +243,17 @@ def respond_request(data: Email, response: str = "approve" or "reject", x_token:
         answer = "rejected"
 
     courses_services.check_premium_limit_reached(data.sender_id)
-    courses_services.respond_to_request(data.course_id, data.sender_id, response)
+    request_answered = courses_services.respond_to_request(data.course_id, data.sender_id, response)
+    #Check which exception is more appropriate
+    if request_answered:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Student has already been approved")
+
     emails = courses_services.show_pending_requests(user.user_id)
+    if emails:
+        return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"
+                " {course title}"), emails
     return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"
-            " {course title}"), emails
+            " {course title}")
 
 
 @courses_router.post("/unsubscribe/id/{course_id}")

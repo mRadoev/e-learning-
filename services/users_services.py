@@ -1,5 +1,5 @@
 from data.database import insert_query, read_query, update_query
-from data.models import User
+from data.models import User, Course
 from typing import Optional
 from mariadb import IntegrityError
 from fastapi import HTTPException, Request
@@ -8,8 +8,6 @@ import jwt
 import bcrypt
 from flask import session
 
-
-# _SEPARATOR = ';'
 
 def find_by_id(user_id: int) -> User | None:
     data = read_query(
@@ -23,9 +21,6 @@ def find_by_email(email: str) -> User | None:
         (email,))
 
     return next((User.from_query_result(*row) for row in data), None)
-
-
-from typing import Optional
 
 
 def try_login(email: str, password: str) -> Optional[User]:
@@ -48,12 +43,8 @@ def create(role: str, first_name: str, last_name: str, password: str, email: str
     if role == 'teacher':
         insert_query(f'INSERT INTO teachers(teacher_id) VALUES ({generated_id})')
 
-    return User(user_id=generated_id, role=role, first_name=first_name, last_name=last_name, password=hashed_password, email=email)
-
-    # except IntegrityError:
-    #     # mariadb raises this error when a constraint is violated
-    #     # in that case we have duplicate emails
-    #     return None
+    return User(user_id=generated_id, role=role, first_name=first_name, last_name=last_name, password=hashed_password,
+                email=email)
 
 
 def create_token(user: User) -> str:
@@ -131,22 +122,8 @@ def from_token(token: str) -> User:
     password = payload.get("password")
 
     user = User(user_id=user_id, first_name=first_name, last_name=last_name, role=role, email=email, password=password)
-    #?Need to encrypt the password with token.
-    #!Check if password is correct when token checks email and id
-    user_exists = find_by_id_and_email(user_id, email)
-    if user_exists:
-        if user_id is None or role is None or email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
 
-        return user
-
-
-# def name_exists(name: str):
-#     data = read_query('SELECT COUNT(*) from users WHERE username = ?', (name,))
-#     if data == [(0,)]:
-#         return False
-#
-#     return True
+    return user
 
 
 def email_exists(email: str):
@@ -174,11 +151,22 @@ def update_user(data: dict, user_id):
                         WHERE user_id = {user_id}''')
 
 
-# def get_user_role_from_token(token: str) -> Optional[str]:
-#     try:
-#         payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
-#         user_role = payload.get('role')
-#         return user_role
-#     except jwt.InvalidTokenError:
-#         print("Invalid token")
-#         return None
+def show_student_courses(user_id: int):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id
+                        WHERE sc.user_id = {user_id} AND sc.subscription_status = 1''')
+    courses = [Course.from_query_result(*row) for row in data]
+    if courses:
+        return courses
+    raise HTTPException(status_code=404, detail="Student not enrolled in any courses!")
+
+
+def show_teacher_courses(user_id: int):
+    data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        WHERE c.owner_id = {user_id}''')
+    courses = [Course.from_query_result(*row) for row in data]
+    if courses:
+        return courses
+    raise HTTPException(status_code=404, detail="Teacher does not own any courses!")
