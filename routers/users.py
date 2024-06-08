@@ -97,6 +97,25 @@ def update_user(request: Request, data: dict, x_token: str = Header()):
     return templates.TemplateResponse('users/account_update_success.html', {"request": request})
 
 
+@users_router.get('/courses')
+def check_user_related_courses(data: dict, x_token: str = Header()):
+    user = get_user_or_raise_401(x_token)
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="You need admin rights for this command!")
+    user_email = data.get('email')
+    student_teacher = find_by_email(user_email)
+    if not student_teacher:
+        raise HTTPException(status_code=404, detail="There is no user with that email!")
+
+    if student_teacher.role == 'student':
+        courses = users_services.show_student_courses(student_teacher.user_id)
+        return courses
+    elif student_teacher.role == 'teacher':
+        courses = users_services.show_teacher_courses(student_teacher.user_id)
+        return courses
+
+
+
 #Students can edit everything about their account information except their email (I assume they can't edit their id)
 #Teachers can edit everything about their account information except their names (I assume they can't edit their id)
 

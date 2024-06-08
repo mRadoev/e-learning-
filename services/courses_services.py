@@ -47,7 +47,7 @@ def grab_any_course_by_id(course_id: int) -> Course:
     course = next((Course.from_query_result(*row) for row in data), None)
     if course:
         return course
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    raise HTTPException(status_code=404, detail="Course not found")
 
 
 def by_id_for_guest(course_id: int):
@@ -193,7 +193,7 @@ def delete_course(course_id: int, token: str):
     user_id = user.user_id
 
     if user.role != ("teacher" or "admin"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access to delete rights!")
+        raise HTTPException(status_code=403, detail="You do not have access to delete rights!")
 
     #TO DO
     if course_id is not None and user.role == "admin":
@@ -242,7 +242,7 @@ def check_premium_limit_reached(student_id: int):
     for row in data:
         premium_courses += 1
     if premium_courses >= 5:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status_code=403,
                             detail="You have reached your premium course enrollment limit of 5")
 
 
