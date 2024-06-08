@@ -23,9 +23,6 @@ def find_by_email(email: str) -> User | None:
     return next((User.from_query_result(*row) for row in data), None)
 
 
-from typing import Optional
-
-
 def try_login(email: str, password: str) -> Optional[User]:
     user = find_by_email(email)
     if user and verify_password(password, user.password):
@@ -46,12 +43,8 @@ def create(role: str, first_name: str, last_name: str, password: str, email: str
     if role == 'teacher':
         insert_query(f'INSERT INTO teachers(teacher_id) VALUES ({generated_id})')
 
-    return User(user_id=generated_id, role=role, first_name=first_name, last_name=last_name, password=hashed_password, email=email)
-
-    # except IntegrityError:
-    #     # mariadb raises this error when a constraint is violated
-    #     # in that case we have duplicate emails
-    #     return None
+    return User(user_id=generated_id, role=role, first_name=first_name, last_name=last_name, password=hashed_password,
+                email=email)
 
 
 def create_token(user: User) -> str:
@@ -128,12 +121,7 @@ def from_token(token: str) -> User:
     password = payload.get("password")
 
     user = User(user_id=user_id, first_name=first_name, last_name=last_name, role=role, email=email, password=password)
-    #?Need to encrypt the password with token.
-    #!Check if password is correct when token checks email and id
-    # user_exists = find_by_id_and_email(user_id, email)
-    # if user_exists:
-    #     if user_id is None or role is None or email is None:
-    #         raise HTTPException(status_code=401, detail="Invalid token")
+
     return user
 
 
@@ -178,5 +166,3 @@ def show_teacher_courses(user_id: int):
     if courses:
         return courses
     raise HTTPException(status_code=404, detail="Teacher does not own any courses!")
-
-

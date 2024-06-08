@@ -7,6 +7,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE `e-learning`.`students_has_courses`;
 TRUNCATE TABLE `e-learning`.`students`;
 TRUNCATE TABLE `e-learning`.`teachers`;
+TRUNCATE TABLE `e-learning`.`emails`;
 -- Truncate the primary table
 TRUNCATE TABLE `e-learning`.`users`;
 TRUNCATE TABLE `e-learning`.`courses`;

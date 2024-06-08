@@ -146,7 +146,7 @@ class Section(BaseModel):
 
 
 class Email(BaseModel):
-    email_id: int
+    email_id: int | None = None
     sender_id: int
     recipient_id: int | None = None
     course_id: int

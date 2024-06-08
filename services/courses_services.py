@@ -1,3 +1,5 @@
+import datetime
+
 from data.database import read_query, insert_query, delete_query, update_query
 from data.models import Course, Email, User  # CourseHasUsers
 from services.users_services import decode_token
@@ -14,36 +16,36 @@ def guest_view():
 
 def student_view(user_id: int):
     data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                            FROM courses c 
-                            WHERE c.status = 0
-                            UNION ALL
-                            SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            JOIN students_has_courses sc ON c.course_id = sc.course_id
-                            WHERE c.status = 1 AND sc.user_id = {user_id}
-                            ORDER BY course_id;''')
+                        FROM courses c 
+                        WHERE c.status = 0
+                        UNION ALL
+                        SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c
+                        JOIN students_has_courses sc ON c.course_id = sc.course_id
+                        WHERE c.status = 1 AND sc.user_id = {user_id}
+                        ORDER BY course_id;''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_student_dict() for course in courses]
 
 
 def teacher_view(user_id: int):
     data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                            FROM courses c 
-                            WHERE c.status = 0
-                            OR c.owner_id = {user_id}''')
+                        FROM courses c 
+                        WHERE c.status = 0
+                        OR c.owner_id = {user_id}''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_teacher_dict() for course in courses]
 
 
 def admin_view():
     data = read_query('''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c ''')
+                        FROM courses c ''')
     return [Course.from_query_result(*row) for row in data]
 
 
 def grab_any_course_by_id(course_id: int) -> Course:
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c WHERE course_id = {course_id}''')
+                        FROM courses c WHERE course_id = {course_id}''')
     course = next((Course.from_query_result(*row) for row in data), None)
     if course:
         return course
@@ -52,79 +54,79 @@ def grab_any_course_by_id(course_id: int) -> Course:
 
 def by_id_for_guest(course_id: int):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            WHERE c.status = 0 AND c.course_id = {course_id};''')
+                        FROM courses c
+                        WHERE c.status = 0 AND c.course_id = {course_id};''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_guest_dict()
 
 
 def by_id_for_non_guest(course_id):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            WHERE c.status = 0 AND c.course_id = {course_id};''')
+                        FROM courses c
+                        WHERE c.status = 0 AND c.course_id = {course_id};''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_student_dict()
 
 
 def by_id_for_student(student_id, course_id):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                            FROM courses c
-                            JOIN students_has_courses sc ON sc.course_id = c.course_id
-                            WHERE c.status = 1 AND c.course_id = {course_id} AND sc.user_id = {student_id}
-                            UNION ALL
-                            SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                            FROM courses c
-                            WHERE c.status = 0 AND c.course_id = {course_id}''')
+                        FROM courses c
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id
+                        WHERE c.status = 1 AND c.course_id = {course_id} AND sc.user_id = {student_id}
+                        UNION ALL
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
+                        FROM courses c
+                        WHERE c.status = 0 AND c.course_id = {course_id}''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_student_dict()
 
 
 def by_id_for_teacher(teacher_id, course_id):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                            FROM courses c
-                            WHERE (c.owner_id = {teacher_id} AND c.course_id = {course_id})
-                            OR (c.status = 0 AND c.course_id = {course_id})''')
+                        FROM courses c
+                        WHERE (c.owner_id = {teacher_id} AND c.course_id = {course_id})
+                        OR (c.status = 0 AND c.course_id = {course_id})''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
     return shown_course.to_teacher_dict()
 
 
 def by_title_for_guest(course_title: str):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            WHERE title LIKE '%{course_title}%'
-                            AND c.status = 0 ''')
+                        FROM courses c
+                        WHERE title LIKE '%{course_title}%'
+                        AND c.status = 0 ''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_guest_dict() for course in courses]
 
 
 def by_title_for_student(course_title: str, user_id: int):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c
-                            WHERE title LIKE '%{course_title}%'
-                            AND c.status = 0 
-                            UNION ALL 
-                            SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                            FROM courses c 
-                            JOIN students_has_courses sc ON sc.course_id = c.course_id 
-                            WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND sc.user_id = {user_id};''')
+                        FROM courses c
+                        WHERE title LIKE '%{course_title}%'
+                        AND c.status = 0 
+                        UNION ALL 
+                        SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
+                        FROM courses c 
+                        JOIN students_has_courses sc ON sc.course_id = c.course_id 
+                        WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND sc.user_id = {user_id};''')
     courses = [Course.from_query_result(*row) for row in data]
     return [course.to_student_dict() for course in courses]
 
 
 def by_title_for_teacher(section_title: str, user_id: int):
     data = read_query(f'''SELECT s.section_id, s.course_id, s.title, s.content, s.description 
-                            FROM sections s
-                            JOIN courses c 
-                            ON s.course_id = c.course_id
-                            WHERE s.title LIKE '%{section_title}%' 
-                            AND c.status = 0 
-                            UNION ALL 
-                            SELECT s.section_id, s.course_id, s.title, s.content, s.description 
-                            FROM sections s 
-                            JOIN courses c 
-                            ON s.course_id = c.course_id 
-                            WHERE s.title LIKE '%{section_title}%' 
-                            AND c.status = 1 AND c.owner_id = {user_id};''')
+                        FROM sections s
+                        JOIN courses c 
+                        ON s.course_id = c.course_id
+                        WHERE s.title LIKE '%{section_title}%' 
+                        AND c.status = 0 
+                        UNION ALL 
+                        SELECT s.section_id, s.course_id, s.title, s.content, s.description 
+                        FROM sections s 
+                        JOIN courses c 
+                        ON s.course_id = c.course_id 
+                        WHERE s.title LIKE '%{section_title}%' 
+                        AND c.status = 1 AND c.owner_id = {user_id};''')
     sections = [Course.from_query_result(*row) for row in data]
     return [section.to_teacher_dict() for section in sections]
 
@@ -209,22 +211,21 @@ def delete_course(course_id: int, token: str):
                             FROM courses
                             WHERE courses.course_id = ?;''')
 
-
     elif course_id is not None and user.role == "teacher":
         data = read_query(f'''SELECT * 
-                                FROM courses c 
-                                WHERE c.owner_id = {user_id}AND c.course_id = {course_id} ''')
+                            FROM courses c 
+                            WHERE c.owner_id = {user_id}AND c.course_id = {course_id} ''')
         if data:
             delete_query(f''' DELETE sc
-                                FROM students_has_courses sc
-                                WHERE sc.course_id = {course_id}''')
+                            FROM students_has_courses sc
+                            WHERE sc.course_id = {course_id}''')
             delete_query(f'''DELETE s
-                                FROM sections s
-                                WHERE s.course_id = {course_id};
-                                
-                                DELETE courses
-                                FROM courses
-                                WHERE courses.course_id = {course_id}''')
+                            FROM sections s
+                            WHERE s.course_id = {course_id};
+                            
+                            DELETE courses
+                            FROM courses
+                            WHERE courses.course_id = {course_id}''')
             return "Course deleted successfully!"
 
         return f"Course with id #{course_id} not found."
@@ -235,9 +236,9 @@ def delete_course(course_id: int, token: str):
 
 
 def check_premium_limit_reached(student_id: int):
-    data = read_query(f'''SELECT course_id
+    data = read_query(f'''SELECT sc.course_id
                         FROM students_has_courses sc
-                        WHERE sc.user_id = {student_id}''')  #AND sc.status = 1
+                        WHERE sc.user_id = {student_id} AND sc.subscription_status = 1''')
     premium_courses = 0
     for row in data:
         premium_courses += 1
@@ -261,15 +262,13 @@ def send_enrollment_request(sender_id: int, course_id: int):
 
     # fetch the teacher with control over course
     data = read_query(f'''SELECT c.owner_id
-                            FROM courses c
-                            WHERE c.course_id = {course_id}
-                            ''')
+                        FROM courses c
+                        WHERE c.course_id = {course_id}''')
 
     enrollment_exists = read_query(f'''SELECT *
-                            FROM emails e
-                            WHERE e.sender_id = {sender_id} 
-                            AND e.recipient_id = {recipient_id} AND e.course_id = {course_id}
-                            ''')
+                        FROM emails e
+                        WHERE e.sender_id = {sender_id} 
+                        AND e.recipient_id = {recipient_id} AND e.course_id = {course_id}''')
 
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -289,11 +288,9 @@ def send_enrollment_request(sender_id: int, course_id: int):
 
 
 def unsubscribe_from_course(user_id: int, course_id: int):
-    enrollment_exists = read_query(f'''
-        SELECT *
-        FROM students_has_courses sc
-        WHERE sc.course_id = {course_id} AND sc.user_id = {user_id}
-    ''')
+    enrollment_exists = read_query(f'''SELECT *
+                    FROM students_has_courses sc
+                    WHERE sc.course_id = {course_id} AND sc.user_id = {user_id}''')
 
     if not enrollment_exists:
         return "You are not enrolled in this course."
@@ -307,28 +304,45 @@ def unsubscribe_from_course(user_id: int, course_id: int):
 
 def show_pending_requests(user_id):
     data = read_query(f'''SELECT * 
-                        FROM emails e
-                        WHERE e.recipient_id = {user_id} AND e.response IS NULL;''')
+                    FROM emails e
+                    WHERE e.recipient_id = {user_id} AND e.response IS NULL;''')
     emails = [Email.from_query_result(*row) for row in data]
     return emails
 
 
 ################################# Test
 def respond_to_request(course_id: int, student_id: int, response: bool):
+    #Check if there are any entries for the course and student in question
     data = read_query(f'''SELECT * 
                     FROM students_has_courses sc 
                     WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+    #Update the email response
     update_query(f'''UPDATE emails e
                     SET e.response = {response}
                     WHERE e.sender_id = {student_id} AND e.course_id = {course_id}''')
-    if response and not data:
-        insert_query(f'''INSERT INTO students_has_courses(course_id, user_id, subscription_status) 
-        VALUES({course_id}, {student_id}, 1)''')
 
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    if response and data:
+        return True
+    #Enroll a student into the course if they haven't been already
+    if response and not data:
+        insert_query(f'''INSERT INTO students_has_courses(course_id, user_id, subscription_status, enrollment_date) 
+        VALUES({course_id}, {student_id}, 1, "{current_date}")''')
+    #Check if the student has already been unenrolled
     elif not response and data:
+        data = read_query(f'''SELECT * 
+                    FROM students_has_courses sc 
+                    WHERE sc.user_id = {student_id} AND sc.course_id = {course_id} AND sc.subscription_status = 0''')
+        if data:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Student has already been unenrolled")
+
         update_query(f'''UPDATE students_has_courses sc
-                    SET sc.subscription_status = 0
+                    SET sc.subscription_status = 0 , sc.unenrollment_date = "{current_date}"
                     WHERE sc.user_id = {student_id} AND sc.course_id = {course_id}''')
+    #Appropriate exception?
+    elif not response and not data:
+        raise HTTPException(status_code=status.HTTP_404_FORBIDDEN,
+                            detail=f"Request for course #{course_id} from student #{student_id} does not exist")
 
 
 def get_course_user_admin(course_id: int):
