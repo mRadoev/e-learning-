@@ -1,16 +1,83 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>User Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        #profileInfo {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        p {
+            margin: 10px 0;
+        }
+        p:first-child {
+            margin-top: 0;
+        }
+        p:last-child {
+            margin-bottom: 0;
+        }
+        p strong {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="profileInfo">
+        <p><strong>Role:</strong> {{ user_info.role }}</p>
+        <p><strong>First Name:</strong> {{ user_info.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ user_info.last_name }}</p>
+        <p><strong>Email:</strong> {{ user_info.email }}</p>
+    </div>
 
-{% block title %}User Profile{% endblock %}
+    <script>
+        const getTokenFromCookie = () => {
+            const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=');
+                if (name.trim() === 'jwt_token') { // Adjusted to trim the cookie name
+                    return value;
+                }
+            }
+            return null;
+        };
 
-{% block content %}
-<h1>User Profile</h1>
-{% if user_info %}
-    <p><strong>ID:</strong> {{ user_info.user_id }}</p>
-    <p><strong>Role:</strong> {{ user_info.role }}</p>
-    <p><strong>Email:</strong> {{ user_info.email }}</p>
-    <p><strong>First Name:</strong> {{ user_info.first_name }}</p>
-    <p><strong>Last Name:</strong> {{ user_info.last_name }}</p>
-{% else %}
-    <p>User not found.</p>
-{% endif %}
-{% endblock %}
+        // Extract user email from the URL
+        const userEmail = window.location.pathname.split('/').pop();
+
+        const fetchUserProfile = async () => {
+            try {
+                const response = await fetch(`/users/profile/${userEmail}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${getTokenFromCookie()}`,
+                        'Content-Type': 'text/html'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.text();
+                const profileInfo = document.getElementById('profileInfo');
+                profileInfo.innerHTML = data;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        fetchUserProfile();
+    </script>
+</body>
+</html>

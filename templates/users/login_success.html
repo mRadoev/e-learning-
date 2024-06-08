@@ -53,5 +53,15 @@
             <a href="/" class="btn">Go to Home Page</a>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var token = "{{ token }}";
+            if (token) {
+                localStorage.setItem("jwt_token", token);
+                console.log("Token stored in local storage:", localStorage.getItem("jwt_token"));
+            }
+        });
+    </script>
 </body>
 </html>
