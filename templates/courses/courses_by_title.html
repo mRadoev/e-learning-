@@ -4,6 +4,84 @@
     <meta charset="UTF-8">
     <title>{% block title %}Courses{% endblock %}</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            position: fixed;
+            top: 0;
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="submit"], input[type="button"], button {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        input[type="text"] {
+            width: 200px;
+            background-color: #e9ecef; /* Add highlighted background color */
+            border: 1px solid #89CFF0; /* Add border to enhance visibility */
+        }
+
+        input[type="text"]:focus {
+            outline: none; /* Remove default focus outline */
+            box-shadow: 0 0 5px #007bff; /* Add shadow on focus for better visibility */
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 10px;
+            margin: 0;
+            display: inline-block;
+            text-align: left;
+        }
+
+        li {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,6 +92,7 @@
             <label for="search">Search by Course Title:</label>
             <input type="text" id="search" name="search">
             <button type="submit">Search</button>
+            <input type="hidden" name="x_token" id="x_token" value="">
         </form>
         {% if course_title %}
             <h2>{{ course_title }}</h2>
@@ -35,5 +114,20 @@
     <footer>
         <p>&copy; 2024 My App</p>
     </footer>
+
+    <script>
+        const getTokenFromCookie = () => {
+            const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=');
+                if (name.trim() === 'jwt_token') {
+                    return value;
+                }
+            }
+            return null;
+        };
+
+        document.getElementById('x_token').value = getTokenFromCookie();
+    </script>
 </body>
 </html>

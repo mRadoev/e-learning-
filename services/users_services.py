@@ -2,7 +2,7 @@ from data.database import insert_query, read_query, update_query
 from data.models import User, Course
 from typing import Optional
 from mariadb import IntegrityError
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 import mariadb
 import jwt
 import bcrypt
@@ -90,7 +90,9 @@ def find_by_id_and_email(user_id: int, email: str) -> bool:
         return False
 
 
-def is_authenticated(token: str) -> bool:
+def is_authenticated(request: Request) -> bool:
+    token = request.cookies.get('jwt_token')  # take token from cookie "jwt_token"
+
     try:
         payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
 
@@ -105,7 +107,6 @@ def is_authenticated(token: str) -> bool:
         return False
     except jwt.InvalidTokenError:
         return False
-
 
 def logged_in():
     return 'user_id' in session
@@ -135,7 +136,10 @@ def email_exists(email: str):
 
 def give_user_info(user_id: int):
     data = read_query('SELECT user_id, role, email, first_name, last_name FROM users WHERE user_id = ?', (user_id,))
-    return [User.from_query_result(*row) for row in data]
+    if data:
+        return User.from_query_result(*data[0])  # Assuming the query returns only one row
+    else:
+        return None  # Or handle the case where no user is found
 
 
 def update_user(data: dict, user_id):
