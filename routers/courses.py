@@ -87,7 +87,7 @@ def experiment(data: dict):
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title/')
+@courses_router.get('/title')
 def show_courses_by_title(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
@@ -121,7 +121,7 @@ def show_courses_by_title(request: Request, search: str = None, x_token: str = H
 
 
 # Available to guests
-@courses_router.get('/tag/')
+@courses_router.get('/tag')
 def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
