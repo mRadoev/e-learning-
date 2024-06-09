@@ -11,7 +11,7 @@
 ## 2. Database - relationships between tables
 
 [//]: # (![image]&#40;https://github.com/mRadoev/e-learning-/assets/155682021/ea913bda-425d-4887-b4a8-3a93ef1a4e88&#41;)
-![Untitled.png](Untitled.png)
+![schema.png](schema.png)
 
 ## 3. Endpoints
 ### 3.1. Courses
