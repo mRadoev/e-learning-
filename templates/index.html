@@ -9,40 +9,73 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
+            background: #f0f0f0 url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 50px auto;
+            padding: 40px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         h1 {
-            text-align: center;
             color: #333;
+            margin-bottom: 20px;
         }
         p {
-            text-align: center;
             color: #666;
+            margin-bottom: 40px;
         }
         .btn-container {
             text-align: center;
             margin-top: 20px;
         }
         .btn {
-            padding: 10px 20px;
-            background-color: #008000;
+            padding: 15px 30px;
+            background-color: #007bff;
             color: #fff;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-            margin-right: 10px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            margin: 10px;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: all 0.75s ease-in-out;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .btn:hover::before {
+            width: 0;
+            height: 0;
         }
         .btn:hover {
-            background-color: #0000ff;
+            background-color: #0056b3;
+            box-shadow: 0 6px 10px rgba(0, 123, 255, 0.2);
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -51,12 +84,27 @@
         <h1>E-Learning Platform</h1>
         <p>Everything you need to know in one place.</p>
         <div class="btn-container">
-            <a href="/users/registration_form" class="btn">Register</a>
-            <a href="/users/login_form" class="btn">Login</a>
+            <a href="/users/registration_form" class="btn" id="registerBtn">Register</a>
+            <a href="/users/login_form" class="btn" id="loginBtn">Login</a>
             <a href="/users/profile_search_form" class="btn">Search Users</a>
-            <a href="/courses" class="btn">View Courses</a>
+            <a href="/courses" class="btn">All Courses</a>
             <a href="/courses/title" class="btn">Search Courses</a>
         </div>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var jwt_token = getCookie("jwt_token");
+            if (jwt_token) {
+                document.getElementById("registerBtn").style.display = "none";
+                document.getElementById("loginBtn").style.display = "none";
+            }
+        });
+
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+    </script>
 </body>
 </html>

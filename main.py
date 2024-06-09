@@ -13,6 +13,8 @@ app.include_router(users_router)
 app.include_router(courses_router)
 app.include_router(sections_router)
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):

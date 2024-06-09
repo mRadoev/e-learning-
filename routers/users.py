@@ -21,16 +21,18 @@ def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-@users_router.get("/profile_search_form", response_class=HTMLResponse)
+@users_router.get("/profile_search_form", response_class=HTMLResponse)          #TESTED
 async def profile_search_form(request: Request):
     return templates.TemplateResponse("users/profile_search_form.html", {"request": request})
 
-@users_router.get('/profile/{user_email}', response_class=HTMLResponse)
-def show_user_by_email(request: Request, user_email: str, jwt_token: str = Cookie(None)):
-    if jwt_token is None:
+@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #TESTED
+def show_user_by_email(request: Request, user_email: str):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
+    if x_token is None:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
 
-    if not is_authenticated(request):
+    if not is_authenticated(x_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user = find_by_email(user_email)
@@ -43,11 +45,11 @@ def show_user_by_email(request: Request, user_email: str, jwt_token: str = Cooki
 
 #Guests must be able to register
 #Admins could authorize teachers' registrations(via email)
-@users_router.get("/registration_form", response_class=HTMLResponse)
+@users_router.get("/registration_form", response_class=HTMLResponse)            #TESTED
 async def get_register_form(request: Request):
     return templates.TemplateResponse("users/register.html", {"request": request})
 
-@users_router.post("/register", response_class=HTMLResponse)
+@users_router.post("/register", response_class=HTMLResponse)            #TESTED
 async def register(request: Request):
     form = await request.form()
 
@@ -66,12 +68,12 @@ async def register(request: Request):
     else:
         raise HTTPException(status_code=500, detail="Failed to register user")
 
-@users_router.get("/login_form", response_class=HTMLResponse)
+@users_router.get("/login_form", response_class=HTMLResponse)           #TESTED
 async def get_login_form(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request})
 
 
-@users_router.post('/login', response_class=HTMLResponse)
+@users_router.post('/login', response_class=HTMLResponse)           #TESTED
 async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     user = try_login(email, password)
     requests = None
@@ -90,12 +92,12 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
-@users_router.get("/logout_form", response_class=HTMLResponse)
+@users_router.get("/logout_form", response_class=HTMLResponse)          #TESTED
 async def get_logout_form(request: Request):
     return templates.TemplateResponse("users/logout.html", {"request": request})
 
 
-@users_router.post('/logout')
+@users_router.post('/logout')           #TESTED
 async def logout(request: Request, response: Response, jwt_token: str = Cookie(None)):
     if jwt_token is not None:
         response.delete_cookie("jwt_token")

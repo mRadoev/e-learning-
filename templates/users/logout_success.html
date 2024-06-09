@@ -7,22 +7,28 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
+            overflow: hidden;
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 40px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             text-align: center;
+            outline: 2px solid transparent;
+            transition: outline-color 0.3s ease;
+        }
+        .container:hover {
+            outline-color: rgba(94, 151, 239, 0.5); /* Lighter color with transparency */
         }
         h1 {
             color: #333;
+            margin-bottom: 20px;
         }
         p {
             color: #666;
@@ -48,17 +54,10 @@
 <body>
     <div class="container">
         <h1>Logout Successful</h1>
-        <p>You have been successfully logged out.</p>
+        <p>Come back soon!</p>
         <div class="btn-container">
             <a href="/" class="btn">Go to Home Page</a>
         </div>
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            document.cookie = "jwt_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            console.log("Token removed from cookies");
-        });
-    </script>
 </body>
 </html>

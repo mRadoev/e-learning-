@@ -3,21 +3,85 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
+    <style>
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 50px;
+        }
+
+        form {
+            width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.5s ease;
+        }
+
+        form:hover {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px #007bff;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
     <h1>Register</h1>
-    <form action="/users/register" method="post" style="width: 300px; margin: 0 auto;">
-        <label for="role" style="display: block; margin-bottom: 10px;">Role:</label>
-        <select name="role" id="role" style="width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <form action="/users/register" method="post">
+        <label for="role">Role:</label>
+        <select name="role" id="role">
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
         </select>
-        <label for="first_name" style="display: block; margin-bottom: 10px;">First Name:</label>
-        <input type="text" id="first_name" name="first_name" style="width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
-        <label for="last_name" style="display: block; margin-bottom: 10px;">Last Name:</label>
-        <input type="text" id="last_name" name="last_name" style="width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
-        <label for="email" style="display: block; margin-bottom: 10px;">Email:</label>
-        <input type="email" id="email" name="email" style="width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
-        <label for="password" style="display: block; margin-bottom: 10px;">Password:</label>
-        <input type="password" id="password" name="password" style="width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px;">
-        <button type="submit" style="width: 100%; padding: 10px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Register</button>
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name">
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+        <button type="submit">Register</button>
     </form>
 {% endblock %}

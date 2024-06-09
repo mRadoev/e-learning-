@@ -90,9 +90,7 @@ def find_by_id_and_email(user_id: int, email: str) -> bool:
         return False
 
 
-def is_authenticated(request: Request) -> bool:
-    token = request.cookies.get('jwt_token')  # take token from cookie "jwt_token"
-
+def is_authenticated(token: str) -> bool:
     try:
         payload = jwt.decode(token, 'secret_key', algorithms=['HS256'])
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException, Header, Depends, Request
+from fastapi import APIRouter, status, HTTPException, Header, Depends, Request, Cookie
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from data.models import Course, Role, Email, CustomParams, CustomPage
@@ -19,8 +19,10 @@ courses_router = APIRouter(prefix='/courses')
 # Guests can only view public courses
 
 
-@courses_router.get('/', response_class=HTMLResponse)
-def show_courses(request: Request, params: CustomParams = Depends(), x_token: Optional[str] = Header(None)):
+@courses_router.get('/', response_class=HTMLResponse)       #TESTED
+def show_courses(request: Request, params: CustomParams = Depends()):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
@@ -87,7 +89,7 @@ def experiment(data: dict):
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title/')
+@courses_router.get('/title/')          #TESTED
 def show_courses_by_title(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
@@ -121,7 +123,7 @@ def show_courses_by_title(request: Request, search: str = None, x_token: str = H
 
 
 # Available to guests
-@courses_router.get('/tag/')
+@courses_router.get('/tag')
 def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)

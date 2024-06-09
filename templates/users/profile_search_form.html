@@ -8,6 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f9f9f9;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             margin: 0;
             padding: 0;
         }
@@ -35,17 +36,17 @@
             box-sizing: border-box;
             margin-bottom: 20px;
         }
-        button[type="submit"] {
-            width: 100%;
-            padding: 10px;
+        button {
+            padding: 12px 24px;
             background-color: #007bff;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, outline 0.3s ease;
+            outline: none;
         }
-        button[type="submit"]:hover {
+        button:hover {
             background-color: #0056b3;
         }
         #profileInfo {
