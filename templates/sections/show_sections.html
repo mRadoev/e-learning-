@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: 2px solid #007bff;
+        }
+        .section:hover {
+            transform: translateY(-5px);
+        }
+        h2 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        p {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .link {
+            color: #28a745;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sections</h1>
+    <div id="sections">
+        <!-- Sections will be dynamically added here -->
+    </div>
+
+    <script>
+        const sectionsData = [{"course_id":1,"section_id":1,"title":"Java 1","content":"New content","description":"The first java example","link":null},{"course_id":3,"section_id":2,"title":"HTML Basics","content":"Example content","description":"Introduction to HTML markup language","link":null},{"course_id":3,"section_id":3,"title":"CSS Styling","content":"Example content","description":"Learn how to style elements using CSS","link":null},{"course_id":4,"section_id":4,"title":"William Shakespeare","content":"Example content","description":"Introduction to the ideas of one of the most famous authors of modern times","link":null}];
+
+        const sectionsContainer = document.getElementById('sections');
+
+        sectionsData.forEach(section => {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.classList.add('section');
+
+            const title = document.createElement('h2');
+            title.textContent = section.title;
+
+            const description = document.createElement('p');
+            description.textContent = section.description;
+
+            const content = document.createElement('p');
+            content.textContent = section.content;
+
+            const link = document.createElement('p');
+            if (section.link) {
+                const linkAnchor = document.createElement('a');
+                linkAnchor.href = section.link;
+                linkAnchor.textContent = 'Link';
+                linkAnchor.classList.add('link');
+                link.appendChild(linkAnchor);
+            } else {
+                link.textContent = 'No link provided';
+            }
+
+            sectionDiv.appendChild(title);
+            sectionDiv.appendChild(description);
+            sectionDiv.appendChild(content);
+            sectionDiv.appendChild(link);
+
+            sectionsContainer.appendChild(sectionDiv);
+        });
+    </script>
+</body>
+</html>

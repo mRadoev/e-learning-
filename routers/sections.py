@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response, status, HTTPException, Header, Depends, Request
+from fastapi.templating import Jinja2Templates
 from data.models import Section, Course, Role, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from services import sections_services
@@ -7,6 +8,7 @@ from typing import Optional
 from services import courses_services
 
 sections_router = APIRouter(prefix='/sections')
+templates = Jinja2Templates(directory="templates")
 
 
 #Teachers can access all sections they own (only?)
@@ -14,8 +16,10 @@ sections_router = APIRouter(prefix='/sections')
 #Guests cannot view sections
 #Pagination for sorting sections by id or name TO DO !!!
 #Remove content from shown topic parameters, show only when looking for specific topic(submenu)
-@sections_router.get('/')
-def show_sections(x_token: Optional[str] = Header(None)):
+@sections_router.get('/')           #TESTED
+def show_sections(request: Request):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
     else:
@@ -32,7 +36,7 @@ def show_sections(x_token: Optional[str] = Header(None)):
     else:
         return "There are no courses you can view!"
 
-    return courses
+    return templates.TemplateResponse('sections/show_sections.html', {"request": request})
 
 
 #Content can be made not visible, because it's supposed to be long text, so instead by searching
@@ -42,7 +46,7 @@ def show_section_by_id(section_id, x_token: str = Header()):
     pass
 
 
-@sections_router.get('/title/{section_title}', response_model=CustomPage)
+@sections_router.get('/title/{section_title}', response_model=CustomPage)       #TO DO
 def show_section_by_title(
     section_title: str,
     request: Request,
@@ -115,6 +119,7 @@ def update_section(data: dict, section_id, x_token: str = Header()):
     sections_services.update_section(data, section_id)
 
     return "Section updated successfully!"
+
 
 @sections_router.get('/any/{section_id}')
 def experiment(section_id):

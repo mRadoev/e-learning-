@@ -20,6 +20,8 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             text-align: center;
             animation: slideIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
         }
         @keyframes slideIn {
             from {
@@ -34,14 +36,33 @@
         h1 {
             color: #333;
             margin-bottom: 20px;
+            font-size: 2em;
+            position: relative;
+            display: inline-block;
+        }
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background-color: #007bff;
+            bottom: -10px;
+            left: 0;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        h1:hover::after {
+            transform: scaleX(1);
         }
         p {
             color: #666;
             margin-bottom: 40px;
         }
         .btn-container {
-            text-align: center;
-            margin-top: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
         }
         .btn {
             padding: 15px 30px;
@@ -50,12 +71,13 @@
             text-decoration: none;
             border-radius: 30px;
             transition: all 0.3s ease;
-            margin: 10px;
-            display: inline-block;
+            margin: 10px 0;
+            display: block;
             position: relative;
             overflow: hidden;
             border: none;
             box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
+            animation: pulse 4s infinite;
         }
         .btn::before {
             content: '';
@@ -77,19 +99,36 @@
             box-shadow: 0 6px 10px rgba(0, 123, 255, 0.2);
             transform: translateY(-2px);
         }
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            50% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="btn-container">
+        <a href="/users/registration_form" class="btn" id="registerBtn">Register</a>
+        <a href="/users/login_form" class="btn" id="loginBtn">Login</a>
+        <a href="/users/profile_search_form" class="btn">Search Users</a>
+        <a href="/courses" class="btn">All Courses</a>
+        <a href="/courses/title" class="btn">Search Courses</a>
+        <a href="/courses/enrollment_form" class="btn">Enroll</a>
+    </div>
     <div class="container">
         <h1>E-Learning Platform</h1>
-        <p>Everything you need to know in one place.</p>
-        <div class="btn-container">
-            <a href="/users/registration_form" class="btn" id="registerBtn">Register</a>
-            <a href="/users/login_form" class="btn" id="loginBtn">Login</a>
-            <a href="/users/profile_search_form" class="btn">Search Users</a>
-            <a href="/courses" class="btn">All Courses</a>
-            <a href="/courses/title" class="btn">Search Courses</a>
-        </div>
+        <p>Welcome to our E-Learning Platform, where you can explore a wide range of courses, connect with other learners, and enhance your skills.</p>
+        <p>Whether you're a student, educator, or professional looking to expand your knowledge, we have something for everyone.</p>
+        <p>Join our community today and take the first step towards a brighter future!</p>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -97,6 +136,13 @@
             if (jwt_token) {
                 document.getElementById("registerBtn").style.display = "none";
                 document.getElementById("loginBtn").style.display = "none";
+
+                var btnContainer = document.querySelector('.btn-container');
+                var logoutBtn = document.createElement('a');
+                logoutBtn.href = "/users/logout_form";
+                logoutBtn.className = "btn";
+                logoutBtn.innerText = "Logout";
+                btnContainer.appendChild(logoutBtn);
             }
         });
 

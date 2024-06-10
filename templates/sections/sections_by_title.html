@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Courses{% endblock %}</title>
+    <title>{% block title %}Sections{% endblock %}</title>
     <link rel="stylesheet" href="/static/styles.css">
     <style>
         body {
@@ -15,7 +15,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: #f0f0f0 url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
         }
 
         header {
@@ -27,23 +26,12 @@
             position: fixed;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
-            transition: background-color 0.3s ease;
-        }
-
-        header:hover {
-            background-color: #0056b3; /* Darker color on hover */
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 28px;
         }
 
         main {
             padding: 20px;
             text-align: center;
-            margin-top: 80px; /* Adjust this value based on the height of the header */
+            margin-top: 100px; /* Adjust this value based on the height of the header */
             width: 100%;
         }
 
@@ -64,7 +52,6 @@
             border: none;
             border-radius: 5px;
             margin-right: 5px;
-            transition: all 0.3s ease; /* Add transition for smoother effects */
         }
 
         input[type="text"] {
@@ -78,7 +65,7 @@
             box-shadow: 0 0 10px #007bff; /* Add shadow on focus for better visibility */
         }
 
-        .course-button {
+        .section-button {
             display: block;
             width: 100%;
             background-color: #fff;
@@ -91,10 +78,9 @@
             transition: background-color 0.3s ease, transform 0.3s ease; /* Add transition for transform */
         }
 
-        .course-button:hover {
+        .section-button:hover {
             background-color: #f0f0f0;
             transform: translateY(-3px); /* Move the button up slightly on hover */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
         }
 
         footer {
@@ -104,75 +90,47 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
-            transition: background-color 0.3s ease;
         }
 
-        footer:hover {
-            background-color: #ddd; /* Lighter color on hover */
-        }
-
-        .course-button h3 {
+        .section-button h3 {
             font-size: 20px; /* Adjust the font size as needed */
         }
 
-        .course-description {
+        .section-description {
             margin-top: 5px;
             font-style: italic;
-        }
-
-        button:focus {
-            outline: none;
-        }
-
-        button.home-button {
-            background-color: #fff;
-            color: #007bff;
-            border: 2px solid #007bff;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            text-decoration: none;
-            margin-top: 20px;
-        }
-
-        button.home-button:hover {
-            background-color: #007bff
-            color: #fff;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Courses</h1>
-        <form action="/courses/title/" method="get">
-            <label for="search">Search by Course Title:</label>
+        <h1>Sections</h1>
+        <form action="/sections/title/" method="get">
+            <label for="search">Search by Section Title:</label>
             <input type="text" id="search" name="search">
             <button type="submit">Search</button>
             <input type="hidden" name="x_token" id="x_token" value="">
         </form>
     </header>
     <main>
-        {% if course_title %}
-            <h2>{{ course_title }}</h2>
+        {% if section_title %}
+            <h2>{{ section_title }}</h2>
         {% endif %}
-        {% if courses %}
-            {% for course in courses %}
-                <button class="course-button" onclick="location.href='/courses/{{ course.id }}/details';">
-                    <h3>{{ course.title }}</h3>
+        {% if sections %}
+            {% for section in sections %}
+                <button class="section-button" onclick="location.href='/sections/{{ section.id }}/details';">
+                    <h3>{{ section.title }}</h3>
                     <!-- Display the description without the label -->
-                    <p class="course-description">{{ course.description }}</p>
+                    <p class="section-description">{{ section.description }}</p>
                     <!-- Add more details as needed -->
                 </button>
             {% endfor %}
         {% else %}
-            <p>No courses found.</p>
+            <p>No sections found.</p>
         {% endif %}
     </main>
     <footer>
         <p>&copy; 2024 My App</p>
-        <button class="home-button" onclick="location.href='/'">Home</button>
     </footer>
 
     <script>

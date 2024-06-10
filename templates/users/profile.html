@@ -47,7 +47,7 @@
             const cookies = document.cookie.split(';').map(cookie => cookie.trim());
             for (const cookie of cookies) {
                 const [name, value] = cookie.split('=');
-                if (name.trim() === 'jwt_token') { // Adjusted to trim the cookie name
+                if (name.trim() === 'jwt_token') {
                     return value;
                 }
             }
@@ -66,15 +66,24 @@
                         'Content-Type': 'text/html'
                     }
                 });
+
+                const profileInfo = document.getElementById('profileInfo');
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    if (response.status === 404) {
+                        profileInfo.innerHTML = '<p>User not found</p>';
+                    } else {
+                        profileInfo.innerHTML = '<p>Error fetching user information. Please try again later.</p>';
+                    }
+                    return;
                 }
 
                 const data = await response.text();
-                const profileInfo = document.getElementById('profileInfo');
                 profileInfo.innerHTML = data;
             } catch (error) {
                 console.error('Error:', error);
+                const profileInfo = document.getElementById('profileInfo');
+                profileInfo.innerHTML = '<p>Error fetching user information. Please try again later.</p>';
             }
         };
 

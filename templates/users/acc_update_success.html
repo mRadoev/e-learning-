@@ -1,8 +1,43 @@
-{% extends "base.html" %}
-
-{% block title %}Account Updated{% endblock %}
-
-{% block content %}
-<h1>Account Updated Successfully</h1>
-<p>Your account information has been updated successfully!</p>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Update Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            margin: 0;
+            padding: 20px;
+        }
+        .success-message {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        p {
+            margin: 10px 0;
+        }
+        p:first-child {
+            margin-top: 0;
+        }
+        p:last-child {
+            margin-bottom: 0;
+        }
+        p strong {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-message">
+        <p>Your account has been successfully updated.</p>
+        <!-- You can include additional information or links here if needed -->
+    </div>
+</body>
+</html>

@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 
-@users_router.get('/id/{user_id}', response_class=HTMLResponse)
+@users_router.get('/id/{user_id}', response_class=HTMLResponse)         #TO BE IMPLEMENTED??
 def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
     if is_authenticated(x_token):
         user_info = give_user_info(user_id)
@@ -25,7 +25,7 @@ def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
 async def profile_search_form(request: Request):
     return templates.TemplateResponse("users/profile_search_form.html", {"request": request})
 
-@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #TESTED
+@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #WORKS WITH CORRECT INFO, WRONG ERROR MESSAGE
 def show_user_by_email(request: Request, user_email: str):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -40,7 +40,8 @@ def show_user_by_email(request: Request, user_email: str):
         user_info = give_user_info(user.user_id)
         return templates.TemplateResponse('users/profile.html', {"request": request, "user_info": user_info})
     else:
-        raise HTTPException(status_code=404, detail="User not found")
+        # simple HTML response indicating user not found
+        return HTMLResponse(content="<p>User not found</p>", status_code=404)
 
 
 #Guests must be able to register
@@ -49,7 +50,7 @@ def show_user_by_email(request: Request, user_email: str):
 async def get_register_form(request: Request):
     return templates.TemplateResponse("users/register.html", {"request": request})
 
-@users_router.post("/register", response_class=HTMLResponse)            #TESTED
+@users_router.post("/register", response_class=HTMLResponse)            #TESTED, WORKS, REQUIRES @ IN EMAIL
 async def register(request: Request):
     form = await request.form()
 
@@ -73,7 +74,7 @@ async def get_login_form(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request})
 
 
-@users_router.post('/login', response_class=HTMLResponse)           #TESTED
+@users_router.post('/login', response_class=HTMLResponse)           #TESTED, TO FIX LOGIN FOR TEACHERS, problem with show_pending_requests
 async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     user = try_login(email, password)
     requests = None
@@ -97,7 +98,7 @@ async def get_logout_form(request: Request):
     return templates.TemplateResponse("users/logout.html", {"request": request})
 
 
-@users_router.post('/logout')           #TESTED
+@users_router.post('/logout')           #TO FIX
 async def logout(request: Request, response: Response, jwt_token: str = Cookie(None)):
     if jwt_token is not None:
         response.delete_cookie("jwt_token")
@@ -105,22 +106,29 @@ async def logout(request: Request, response: Response, jwt_token: str = Cookie(N
     else:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
 
+@users_router.get("/acc_update", response_class=HTMLResponse)          #TESTED
+async def get_acc_update_form(request: Request):
+    return templates.TemplateResponse("users/acc_update_form.html", {"request": request})
 
-@users_router.put('/account', response_class=HTMLResponse)
-def update_user(request: Request, data: dict, jwt_token: str = Cookie(None)):
-    if jwt_token is None:
+@users_router.put('/account', response_class=HTMLResponse)          #TO FIX
+def update_user(request: Request, data: dict):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
+    if x_token is None:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
 
-    user = get_user_or_raise_401(jwt_token)
+    user = get_user_or_raise_401(x_token)
     if data.get('user_id') or data.get('role'):
         return "You cannot change your ID or role."
 
     users_services.update_user(data, user.user_id)
-    return templates.TemplateResponse('users/account_update_success.html', {"request": request})
+    return templates.TemplateResponse('users/acc_update_success.html', {"request": request})
 
 
-@users_router.get('/courses')
-def check_user_related_courses(data: dict, x_token: str = Header()):
+@users_router.get('/courses')           #TO FIX ERRORS
+def check_user_related_courses(request: Request, data: dict):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     user = get_user_or_raise_401(x_token)
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="You need admin rights for this command!")

@@ -118,7 +118,7 @@ class Section(BaseModel):
     title: str
     content: str
     description: str = "No description given yet"
-    link: str = "No link given yet"
+    link: str | None = None
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'section_id', 'title', 'description'})

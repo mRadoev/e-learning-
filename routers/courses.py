@@ -51,9 +51,8 @@ def show_courses(request: Request, params: CustomParams = Depends()):
                                        "custom_page": custom_page})
 
 
-#TO DO FIX CODE!!!
 # Only available to logged users
-@courses_router.get('/id/{course_id}')
+@courses_router.get('/id/{course_id}')          #TO DO FIX CODE!!! TO IMPLEMENT??
 def get_course_by_id(course_id: int, x_token: str = Header(None)):
     # Decode the token
     if x_token:
@@ -90,7 +89,9 @@ def experiment(data: dict):
 
 
 @courses_router.get('/title/')          #TESTED
-def show_courses_by_title(request: Request, search: str = None, x_token: str = Header(None)):
+def show_courses_by_title(request: Request, search: str = None):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
@@ -123,7 +124,7 @@ def show_courses_by_title(request: Request, search: str = None, x_token: str = H
 
 
 # Available to guests
-@courses_router.get('/tag')
+@courses_router.get('/tag')         #To be implemented!
 def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
@@ -206,10 +207,16 @@ def update_course(data: dict, course_id: int, x_token: str = Header()):
     return "Course updated successfully!"
 
 
+@courses_router.get("/enrollment_form", response_class=HTMLResponse)           #TESTED
+async def get_enrollment_form(request: Request):
+    return templates.TemplateResponse("courses/enrollment_form.html", {"request": request})
+
 # (only?)Students can enroll in up to 5 premium courses and unlimited public courses
 # Teachers should be able to approve enrollment requests and could be notified by email about the request
-@courses_router.post("/enroll/id/{course_id}")
-def enroll_in_course(course_id: int, x_token: str = Header(...)):
+@courses_router.post("/enroll/id/{course_id}")          #Make it to title, searching for title in enrollment form
+def enroll_in_course(request: Request, course_id: int):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     user = get_user_or_raise_401(x_token)
     if user.role != "student":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can send enrollment requests.")
@@ -258,7 +265,7 @@ def respond_request(data: Email, response: str = "approve" or "reject", x_token:
             " {course title}")
 
 
-@courses_router.post("/unsubscribe/id/{course_id}")
+@courses_router.post("/unsubscribe/id/{course_id}")         #Make by title
 def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":
