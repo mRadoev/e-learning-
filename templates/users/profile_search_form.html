@@ -7,34 +7,48 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
             background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #fff;
         }
         h1 {
             text-align: center;
-            margin-top: 50px;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in-out;
         }
         form {
             max-width: 400px;
-            margin: 0 auto;
+            width: 100%;
             padding: 20px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+            animation: slideIn 0.5s ease-out;
+            margin-top: 20px;
         }
         label {
             display: block;
             margin-bottom: 10px;
+            color: #333;
         }
         input[type="email"] {
-            width: 100%;
+            width: calc(100% - 22px); /* Adjusted width to accommodate padding */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
             margin-bottom: 20px;
+            transition: border-color 0.3s ease; /* Smooth transition on focus */
+        }
+        input[type="email"]:focus {
+            border-color: #007bff; /* Highlight border color on focus */
         }
         button {
             padding: 12px 24px;
@@ -43,11 +57,13 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease, outline 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
             outline: none;
+            width: 100%;
         }
         button:hover {
             background-color: #0056b3;
+            transform: scale(1.05);
         }
         #profileInfo {
             max-width: 600px;
@@ -57,13 +73,21 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); }
+            to { transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
     <h1>Profile Search</h1>
-
     <form id="searchForm">
-        <label for="email">Enter Email:</label>
+        <label for="email">Enter User Email:</label>
         <input type="email" id="email" name="email" required>
         <button type="submit">Search</button>
     </form>
@@ -95,7 +119,7 @@
                 profileInfo.innerHTML = data;
             } catch (error) {
                 console.error('Error:', error);
-                profileInfo.innerHTML = '<p>Error fetching user information. Please try again later.</p>';
+                profileInfo.innerHTML = '<p>Please enter a valid email.</p>';
             }
         });
     </script>

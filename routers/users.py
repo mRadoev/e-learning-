@@ -25,7 +25,7 @@ def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
 async def profile_search_form(request: Request):
     return templates.TemplateResponse("users/profile_search_form.html", {"request": request})
 
-@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #WORKS WITH CORRECT INFO, WRONG ERROR MESSAGE
+@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #WORKS, WRONG ERROR MESSAGE
 def show_user_by_email(request: Request, user_email: str):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -50,7 +50,7 @@ def show_user_by_email(request: Request, user_email: str):
 async def get_register_form(request: Request):
     return templates.TemplateResponse("users/register.html", {"request": request})
 
-@users_router.post("/register", response_class=HTMLResponse)            #TESTED, WORKS, REQUIRES @ IN EMAIL
+@users_router.post("/register", response_class=HTMLResponse)            #TESTED
 async def register(request: Request):
     form = await request.form()
 
@@ -74,7 +74,7 @@ async def get_login_form(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request})
 
 
-@users_router.post('/login', response_class=HTMLResponse)           #TESTED, TO FIX LOGIN FOR TEACHERS, problem with show_pending_requests
+@users_router.post('/login', response_class=HTMLResponse)           #TESTED
 async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     user = try_login(email, password)
     requests = None

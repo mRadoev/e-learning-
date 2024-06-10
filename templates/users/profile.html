@@ -7,21 +7,29 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
             background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
         }
         #profileInfo {
             max-width: 400px;
-            margin: 0 auto;
+            width: 100%;
             padding: 20px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            color: #333;
+            animation: fadeIn 1s ease-in-out;
         }
         p {
             margin: 10px 0;
+            font-size: 1.1em;
         }
         p:first-child {
             margin-top: 0;
@@ -31,63 +39,21 @@
         }
         p strong {
             margin-right: 5px;
+            color: #007bff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div id="profileInfo">
-        <p><strong>Role:</strong> {{ user_info.role }}</p>
-        <p><strong>First Name:</strong> {{ user_info.first_name }}</p>
-        <p><strong>Last Name:</strong> {{ user_info.last_name }}</p>
-        <p><strong>Email:</strong> {{ user_info.email }}</p>
+        <p><strong>Role:</strong> {{ user_info['role'] }}</p>
+        <p><strong>First Name:</strong> {{ user_info['first_name'] }}</p>
+        <p><strong>Last Name:</strong> {{ user_info['last_name'] }}</p>
+        <p><strong>Email:</strong> {{ user_info['email'] }}</p>
     </div>
-
-    <script>
-        const getTokenFromCookie = () => {
-            const cookies = document.cookie.split(';').map(cookie => cookie.trim());
-            for (const cookie of cookies) {
-                const [name, value] = cookie.split('=');
-                if (name.trim() === 'jwt_token') {
-                    return value;
-                }
-            }
-            return null;
-        };
-
-        // Extract user email from the URL
-        const userEmail = window.location.pathname.split('/').pop();
-
-        const fetchUserProfile = async () => {
-            try {
-                const response = await fetch(`/users/profile/${userEmail}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${getTokenFromCookie()}`,
-                        'Content-Type': 'text/html'
-                    }
-                });
-
-                const profileInfo = document.getElementById('profileInfo');
-
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        profileInfo.innerHTML = '<p>User not found</p>';
-                    } else {
-                        profileInfo.innerHTML = '<p>Error fetching user information. Please try again later.</p>';
-                    }
-                    return;
-                }
-
-                const data = await response.text();
-                profileInfo.innerHTML = data;
-            } catch (error) {
-                console.error('Error:', error);
-                const profileInfo = document.getElementById('profileInfo');
-                profileInfo.innerHTML = '<p>Error fetching user information. Please try again later.</p>';
-            }
-        };
-
-        fetchUserProfile();
-    </script>
 </body>
 </html>

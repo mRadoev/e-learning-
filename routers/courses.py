@@ -51,34 +51,26 @@ def show_courses(request: Request, params: CustomParams = Depends()):
                                        "custom_page": custom_page})
 
 
+
 # Only available to logged users
-@courses_router.get('/id/{course_id}')          #TO DO FIX CODE!!! TO IMPLEMENT??
-def get_course_by_id(course_id: int, x_token: str = Header(None)):
-    # Decode the token
+@courses_router.get('/id/{course_id}', response_class=HTMLResponse)
+def show_course_details(request: Request, course_id: int):
+    cookie_value = request.cookies.get('jwt_token')
+    x_token = cookie_value
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
         user_role = logged_user.role
     else:
-        logged_user = None
+        user_role = None
+        user_id = None
 
-    check_course = courses_services.grab_any_course_by_id(course_id)
+    course_details = courses_services.grab_any_course_by_id(course_id)
 
-    if user_role == 'admin':
-        return check_course
-    elif check_course.status == 0 and logged_user is None:
-        return courses_services.by_id_for_guest(course_id)
-    elif check_course.status == 0:
-        return courses_services.by_id_for_non_guest(course_id)
-    elif user_role == 'student' and check_course.status == 1:
-        course_to_show = courses_services.by_id_for_student(user_id, course_id)
-        return course_to_show
-    elif user_role == 'teacher' and check_course.status == 1:
-        course_to_show = courses_services.by_id_for_teacher(user_id, course_id)
-        return course_to_show
+    if course_details:
+        return templates.TemplateResponse("courses/course_details.html", {"request": request, "course": course_details})
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 # Only available to logged users
 

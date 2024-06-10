@@ -1,5 +1,6 @@
 from data.database import read_query, insert_query, delete_query, update_query
 from data.models import Course, Section  # CourseHasUsers
+from typing import List
 from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
@@ -57,11 +58,44 @@ def admin_view():
 def grab_any_section_by_id(section_id: int) -> Section:
     data = read_query(f'''SELECT s.course_id, s.section_id, s.title, s.content, s.description, s.link 
                             FROM sections s WHERE s.section_id = {section_id}''')
-    # course = [Course.from_query_result(*row) for row in data]
     section = next((Section.from_query_result(*row) for row in data), None)
     if section:
         return section
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
+
+
+def get_section_content(section_id: int):
+    data = read_query(f'''SELECT s.content
+                      FROM sections s 
+                      WHERE section_id = {section_id}''')
+
+    if data and data[0][0]:
+        return data[0][0]
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
+
+def get_section_title(section_id: int):
+    data = read_query(f'''SELECT s.title
+                      FROM sections s 
+                      WHERE section_id = {section_id}''')
+
+    if data and data[0][0]:
+        return data[0][0]
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
+
+
+def grab_sections_by_course(course_id: int) -> List[Section]:
+    data = read_query(f'''SELECT s.course_id, s.section_id, s.title, s.content, s.description, s.link 
+                            FROM sections s WHERE s.course_id = {course_id}''')
+    sections = []
+    for row in data:
+        section = Section.from_query_result(*row)
+        sections.append(section)
+    if sections:
+        return sections
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sections not found")
+
 
 
 def update_section(data: dict, section_id: int):

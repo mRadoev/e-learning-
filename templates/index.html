@@ -37,6 +37,7 @@
             color: #333;
             margin-bottom: 20px;
             font-size: 2em;
+            font-family: 'Garamond', serif; /* Change font family */
             position: relative;
             display: inline-block;
         }
@@ -57,27 +58,27 @@
         p {
             color: #666;
             margin-bottom: 40px;
+            font-size: 1.2em;
         }
         .btn-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            padding: 20px;
+            text-align: center; /* Center align the buttons */
+            margin-top: 20px; /* Adjust the margin as needed */
         }
         .btn {
             padding: 15px 30px;
+            margin: 0 10px; /* Adjust the margin between buttons */
             background-color: #007bff;
             color: #fff;
             text-decoration: none;
             border-radius: 30px;
-            transition: all 0.3s ease;
-            margin: 10px 0;
-            display: block;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.6s ease;
+            display: inline-block;
             border: none;
             box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
             animation: pulse 4s infinite;
+            text-align: center; /* Center text */
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         .btn::before {
             content: '';
@@ -104,11 +105,11 @@
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
             }
-            50% {
+            40% {
                 transform: scale(1);
                 box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
             }
-            100% {
+            80% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
             }

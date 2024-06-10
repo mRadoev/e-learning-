@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Response, status, HTTPException, Header, Depends, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from data.models import Section, Course, Role, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from services import sections_services
@@ -83,6 +84,52 @@ def show_section_by_title(
     custom_page.next_page = f"{base_url}sections/title/{section_title}?page={next_int}" if next_int else None
 
     return custom_page
+
+
+@sections_router.get('/course/{course_id}', response_model=CustomPage)
+def show_sections_by_course(
+        course_id: int,
+        request: Request,
+        params: CustomParams = Depends(),
+):
+    base_url = str(request.base_url)
+
+    # Retrieve token from cookies
+    x_token = request.cookies.get('jwt_token')
+
+    user_role = None
+    user_id = None
+
+    if x_token:
+        logged_user = get_user_or_raise_401(x_token)
+        user_id = logged_user.user_id
+        user_role = logged_user.role
+
+    sections_to_show = sections_services.grab_sections_by_course(course_id)
+
+    paginated_sections = paginate(sections_to_show, params)
+
+    # Create the custom page response
+    custom_page = CustomPage.create(paginated_sections.items, paginated_sections.total, params)
+    previous_int = custom_page.previous_page
+    next_int = custom_page.next_page
+    custom_page.previous_page = f"{base_url}sections/course/{course_id}?page={previous_int}" if previous_int else None
+    custom_page.next_page = f"{base_url}sections/course/{course_id}?page={next_int}" if next_int else None
+
+    return templates.TemplateResponse("sections/sections_by_course.html", {"request": request, "sections": paginated_sections.items, "previous_page": custom_page.previous_page, "next_page": custom_page.next_page})
+
+@sections_router.get('/content/{section_id}', response_model=CustomPage)
+def show_content_by_section(
+        section_id: int,
+        request: Request,
+):
+    x_token = request.cookies.get('jwt_token')
+    section_content = sections_services.get_section_content(section_id)
+    section_title = sections_services.get_section_title(section_id)
+
+    if not section_content:
+        raise HTTPException(status_code=404, detail="Section not found")
+    return templates.TemplateResponse("sections/section_content.html", {"request": request, "section_content": section_content, "section_title": section_title})
 
 
 #Only teachers that own the course can create new sections for it and update it

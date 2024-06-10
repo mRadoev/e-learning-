@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`users` (
   `email` VARCHAR(45) NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
-  `password` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(200) NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `id_UNIQUE` (`user_id` ASC) ,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) )
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `e-learning`.`sections` (
   `section_id` INT(11) NOT NULL AUTO_INCREMENT,
   `course_id` INT(11) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
-  `content` VARCHAR(45) NOT NULL,
+  `content` TEXT NOT NULL,
   `description` TEXT NULL DEFAULT NULL,
   `link` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`section_id`),

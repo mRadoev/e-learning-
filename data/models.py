@@ -55,7 +55,7 @@ class User(BaseModel):
     email: str
     first_name: str
     last_name: str
-    password: str = "Password is hidden."
+    password: str
     photo: Optional[None] = None
     phone_number: Optional[str] = None
     linkedin: Optional[str] = None
@@ -114,11 +114,10 @@ class Course(BaseModel):
 
 class Section(BaseModel):
     course_id: int
-    section_id: int | None = None
+    section_id: int
     title: str
     content: str
-    description: str = "No description given yet"
-    link: str | None = None
+    description: str
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'section_id', 'title', 'description'})
@@ -130,11 +129,30 @@ class Section(BaseModel):
         return self.dict(
             include={'course_id', 'section_id', 'title', 'content', 'description'}
         )
+
     @classmethod
-    def from_query_result(cls, course_id, section_id, title, content, description, link="No link given yet"):
+    def from_query_result(cls, course_id: str, section_id: Optional[str], title: str, content: str, description: str,
+                          link: Optional[str] = None):
+
+        try:
+            course_id_int = int(course_id)
+        except ValueError:
+            course_id_int = None
+
+        if section_id is not None:
+            try:
+                section_id_int = int(section_id)
+            except ValueError:
+                section_id_int = None
+        else:
+            section_id_int = None
+
+        if description is None:
+            description = "No description given yet"  # Providing a default value if description is None
+
         return cls(
-            course_id=course_id,
-            section_id=section_id,
+            course_id=course_id_int,
+            section_id=section_id_int,
             title=title,
             content=content,
             description=description,
