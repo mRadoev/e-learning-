@@ -106,6 +106,7 @@ def is_authenticated(token: str) -> bool:
     except jwt.InvalidTokenError:
         return False
 
+
 def logged_in():
     return 'user_id' in session
 
@@ -148,6 +149,7 @@ def update_user(data: dict, user_id):
                         SET {key} = {value} 
                         WHERE user_id = {user_id}''')
 
+
 #Maybe we should show the student details as well?
 def show_student_courses(user_id: int):
     data = read_query(f'''SELECT c.course_id, c.owner_id, c.title, c.description, c.objectives, c.tags, c.status 
@@ -158,6 +160,7 @@ def show_student_courses(user_id: int):
     if courses:
         return courses
     raise HTTPException(status_code=404, detail="Student not enrolled in any courses!")
+
 
 #Maybe we should show the owner details as well?
 def show_teacher_courses(user_id: int):
