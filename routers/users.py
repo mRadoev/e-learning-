@@ -101,7 +101,7 @@ async def get_logout_form(request: Request):
 @users_router.post('/logout')           #TO FIX
 async def logout(request: Request, response: Response, jwt_token: str = Cookie(None)):
     if jwt_token is not None:
-        response.delete_cookie("jwt_token")
+        response.delete_cookie(key="jwt_token")
         return templates.TemplateResponse('users/logout_success.html', {"request": request})
     else:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
