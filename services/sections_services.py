@@ -74,6 +74,7 @@ def get_section_content(section_id: int):
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Section not found")
 
+
 def get_section_title(section_id: int):
     data = read_query(f'''SELECT s.title
                       FROM sections s 
@@ -88,20 +89,22 @@ def get_section_title(section_id: int):
 def grab_sections_by_course(course_id: int) -> List[Section]:
     data = read_query(f'''SELECT s.course_id, s.section_id, s.title, s.content, s.description, s.link 
                             FROM sections s WHERE s.course_id = {course_id}''')
-    sections = []
-    for row in data:
-        section = Section.from_query_result(*row)
-        sections.append(section)
-    if sections:
-        return sections
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sections not found")
 
+    sections = [Section.from_query_result(*row) for row in data]
+    return [section.to_guest_dict() for section in sections]
+    # sections = []
+    # for row in data:
+    #     section = Section.from_query_result(*row)
+    #     sections.append(section)
+    # if sections:
+    #     return sections
+    # return []
 
 
 def update_section(data: dict, section_id: int):
     for key, value in data.items():
         if type(value) is str:
-            value = '"'+f'{value}'+'"'
+            value = '"' + f'{value}' + '"'
         update_query(f'''UPDATE sections
                         SET {key} = {value} 
                         WHERE section_id = {section_id}''')

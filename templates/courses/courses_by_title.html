@@ -103,6 +103,7 @@
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
         }
 
         .course-button:hover {
@@ -170,10 +171,10 @@
         {% endif %}
         {% if courses %}
             {% for course in courses %}
-                <button class="course-button" onclick="location.href='/courses/{{ course.id }}/details';">
+                <a class="course-button" href="/courses/id/{{ course.course_id }}">
                     <h3>{{ course.title }}</h3>
                     <p class="course-description">{{ course.description }}</p>
-                </button>
+                </a>
             {% endfor %}
         {% else %}
             <p>No courses found.</p>
