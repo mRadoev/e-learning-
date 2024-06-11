@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Course</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            background: #f0f0f0 url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="submit"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #007bff;
+        }
+        input[type="text"]:hover,
+        textarea:hover,
+        select:hover {
+            border-color: #66b3ff;
+        }
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: calc(100% - 10px);
+            background-position-y: center;
+            padding-right: 40px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create a New Course</h1>
+        <form id="create-course-form" action="/courses/create" method="POST" enctype="multipart/form-data">
+            <label for="title">Course Title:</label><br>
+            <input type="text" id="title" name="title" required><br>
+
+            <label for="description">Course Description:</label><br>
+            <textarea id="description" name="description" required></textarea><br>
+
+            <label for="objectives">Course Objectives:</label><br>
+            <textarea id="objectives" name="objectives" required></textarea><br>
+
+            <label for="tags">Tags (comma-separated):</label><br>
+            <input type="text" id="tags" name="tags"><br>
+
+            <label for="status">Status:</label><br>
+            <select id="status" name="status" required>
+                <option value="0">Public</option>
+                <option value="1">Private</option>
+            </select><br>
+
+            <input type="submit" value="Create Course">
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('create-course-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+
+            // Retrieve the token from the cookie
+            const token = document.cookie.replace(/(?:(?:^|.*;\s*)x-token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+
+            // Convert status to integer
+            formData.set('status', parseInt(formData.get('status')));
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-token': token
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                document.body.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Response, HTTPException, Header, Request, Form, C
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from common.auth import get_user_or_raise_401
+from base64 import b64encode
 from data.models import User, LoginData
 from services import users_services, courses_services
 from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token, try_login, find_by_id
@@ -25,22 +26,26 @@ def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
 async def profile_search_form(request: Request):
     return templates.TemplateResponse("users/profile_search_form.html", {"request": request})
 
-@users_router.get('/profile/{user_email}', response_class=HTMLResponse)         #WORKS, WRONG ERROR MESSAGE
+@users_router.get('/profile/{user_email}', response_class=HTMLResponse)
 def show_user_by_email(request: Request, user_email: str):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
     if x_token is None:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
-
     if not is_authenticated(x_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
-
     user = find_by_email(user_email)
     if user:
         user_info = give_user_info(user.user_id)
+        if isinstance(user_info, dict) and user_info.get('role') == 'student':
+            student_info = users_services.get_student_info(user.email)
+            if student_info and student_info['photo'] is not None:
+                photo_base64 = b64encode(student_info['photo']).decode('utf-8')
+                user_info['photo'] = photo_base64
+            else:
+                user_info['photo'] = None
         return templates.TemplateResponse('users/profile.html', {"request": request, "user_info": user_info})
     else:
-        # simple HTML response indicating user not found
         return HTMLResponse(content="<p>User not found</p>", status_code=404)
 
 

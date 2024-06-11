@@ -1,5 +1,5 @@
 from data.database import insert_query, read_query, update_query
-from data.models import User, Course
+from data.models import User, Course, Student
 from typing import Optional
 from mariadb import IntegrityError
 from fastapi import HTTPException, Request
@@ -22,6 +22,12 @@ def find_by_email(email: str) -> User | None:
 
     return next((User.from_query_result(*row) for row in data), None)
 
+def get_student_info(email: str) -> Student | None:
+
+    data = read_query(
+        'SELECT user_id, photo FROM students WHERE email = ?',
+        (email,))
+    return next((Student(user_id=row[0], photo=row[1]) for row in data), None)
 
 def try_login(email: str, password: str) -> Optional[User]:
     user = find_by_email(email)

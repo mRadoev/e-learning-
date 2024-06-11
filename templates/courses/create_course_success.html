@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Created Successfully</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .info {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .info p {
+            margin: 5px 0;
+        }
+        .info h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Course Created Successfully</h1>
+        <div class="info">
+            <p><span class="highlight">Course Title:</span> {{ course.title }}</p>
+            <p><span class="highlight">Description:</span> {{ course.description }}</p>
+            <p><span class="highlight">Objectives:</span> {{ course.objectives }}</p>
+            <p><span class="highlight">Tags:</span> {{ course.tags }}</p>
+            <p><span class="highlight">Status:</span> {{ course.status }}</p>
+        </div>
+        <a href="/" class="button">Back to Home</a>
+        <p class="footer">Thank you for creating the course!</p>
+    </div>
+</body>
+</html>

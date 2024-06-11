@@ -41,7 +41,12 @@
             margin-right: 5px;
             color: #007bff;
         }
-
+        #profilePhoto, #alternatePhoto {
+            max-width: 200px; /* Adjust size as needed */
+            height: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -54,6 +59,13 @@
         <p><strong>First Name:</strong> {{ user_info['first_name'] }}</p>
         <p><strong>Last Name:</strong> {{ user_info['last_name'] }}</p>
         <p><strong>Email:</strong> {{ user_info['email'] }}</p>
+        {% if user_info['role'] == 'student' %}
+            {% if user_info['photo'] %}
+                <img id="profilePhoto" src="data:image/jpeg;base64,{{ user_info['photo'] }}" alt="Profile Photo">
+            {% else %}
+                <p>No profile photo available.</p>
+            {% endif %}
+        {% endif %}
     </div>
 </body>
 </html>

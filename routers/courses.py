@@ -1,12 +1,10 @@
-from fastapi import APIRouter, status, HTTPException, Header, Depends, Request, Cookie
+from fastapi import APIRouter, status, HTTPException, Header, Depends, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from data.models import Course, Role, Email, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
-from typing import Optional
 from services import courses_services, sections_services
-from fastapi_pagination import Page, Params, paginate
-from services.users_services import decode_token
+from fastapi_pagination import paginate
 from fastapi_pagination.utils import disable_installed_extensions_check
 
 disable_installed_extensions_check()
@@ -165,33 +163,68 @@ def show_courses_by_tag(request: Request, search: str = None, x_token: str = Hea
 def show_courses_by_rating(rating, x_token: str = Header()):
     pass
 
+@courses_router.get("/create_form", response_class=HTMLResponse)           #TESTED
+async def get_course_form(request: Request):
+    return templates.TemplateResponse("courses/create_course.html", {"request": request})
 
-# Only teachers can create new courses
-@courses_router.post('/create')
-def create_course(course_data: Course, x_token: str = Header(None)):
-    if x_token is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
+
+@courses_router.post('/create', response_class=HTMLResponse)
+async def create_course(request: Request, course_data: Course = None):
+    if course_data:  # If course_data is provided as JSON data
+        title = course_data.title
+        description = course_data.description
+        objectives = course_data.objectives
+        tags = course_data.tags
+        status = course_data.status
+    else:  # If form data is provided
+        form = await request.form()
+        title = form.get('title')
+        description = form.get('description')
+        objectives = form.get('objectives')
+        tags = form.get('tags')
+        status = form.get('status')
+
+    if not all([title, description, objectives]):
+        raise HTTPException(status_code=422, detail="Missing required fields")
+
+    try:
+        status = int(status)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid status value")
+
+    x_token = request.cookies.get("jwt_token")
+    if not x_token:
+        raise HTTPException(status_code=401, detail="You need to log in first!")
 
     user = get_user_or_raise_401(x_token)
     if user.role != "teacher":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers can create courses")
+        raise HTTPException(status_code=403, detail="Only teachers can create courses")
+
+    course_data = Course(
+        title=title,
+        description=description,
+        objectives=objectives,
+        tags=tags,
+        status=int(status)
+    )
 
     new_course = courses_services.create_course(course_data, user.user_id)
-    return "New course created successfully!", new_course
+
+    return templates.TemplateResponse('courses/create_course_success.html', {"request": request, "course": new_course})
 
 
 ########To optimize and fix
-@courses_router.delete('/delete')
-def delete_course(data, x_token: str = Header()):
-    # user = get_user_or_raise_401(x_token)
-    # if user.role == "admin":
-    #     pass
-    # if user.role == "teacher":
-    #     pass
-    if data.course_id:
-        course_id = data.course_id
-    result = courses_services.delete_course(data.course_id, data.title, x_token)
-    return result
+# @courses_router.delete('/delete')
+# def delete_course(data, x_token: str = Header()):
+#     # user = get_user_or_raise_401(x_token)
+#     # if user.role == "admin":
+#     #     pass
+#     # if user.role == "teacher":
+#     #     pass
+#     if data.course_id:
+#         course_id = data.course_id
+#     result = courses_services.delete_course(data.course_id, data.title, x_token)
+#     return result
 
 
 # Admins can remove access to courses for students(CourseHasUsers)

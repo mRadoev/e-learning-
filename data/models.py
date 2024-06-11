@@ -74,6 +74,10 @@ class User(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+class Student(BaseModel):
+    user_id: int
+    photo: Optional[str] = None
+
 
 class Course(BaseModel):
     course_id: int | None = None
