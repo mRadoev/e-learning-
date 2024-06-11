@@ -44,7 +44,10 @@
         nav ul li a {
             text-decoration: none;
             color: #fff;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, background-color 0.3s ease; /* Added transition */
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
         }
 
         nav ul li a:hover {
@@ -127,11 +130,11 @@
         <ul class="course-list">
             {% for course in courses %}
                 <li class="course-item">
-                    <a href="/courses/id/{{ course.course_id }}">
+                    <a href="/sections/course/{{ course.course_id }}">
                         <h2>{{ course.title }}</h2>
                     </a>
                     <p><strong>Description:</strong> {{ course.description }}</p>
-<!--                    <p><strong>Objectives:</strong> {{ course.objectives }}</p>-->
+                    <p><strong>Objectives:</strong> {{ course.objectives }}</p>
                     <p><strong>Tags:</strong> {{ course.tags }}</p>
                 </li>
             {% endfor %}
