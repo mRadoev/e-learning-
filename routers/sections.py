@@ -105,9 +105,22 @@ def show_sections_by_course(
         user_id = logged_user.user_id
         user_role = logged_user.role
 
-    sections_to_show = sections_services.grab_sections_by_course(course_id)
+    if user_role == 'teacher':
+        course = courses_services.grab_any_course_by_id(course_id)
+        if course.owner_id == user_id:
+            sections = sections_services.grab_sections_by_course(course_id)
 
-    paginated_sections = paginate(sections_to_show, params)
+    elif user_role == 'student':
+        if courses_services.by_id_for_student(user_id, course_id):
+            sections = sections_services.grab_sections_by_course(course_id)
+
+    else:
+        return []
+
+
+    # sections_to_show = sections_services.grab_sections_by_course(course_id)
+
+    paginated_sections = paginate(sections, params)
 
     # Create the custom page response
     custom_page = CustomPage.create(paginated_sections.items, paginated_sections.total, params)
