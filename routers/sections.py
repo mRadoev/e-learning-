@@ -99,23 +99,24 @@ def show_sections_by_course(
 
     user_role = None
     user_id = None
+    sections = None
 
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
         user_role = logged_user.role
+    course = courses_services.grab_any_course_by_id(course_id)
 
     if user_role == 'teacher':
-        course = courses_services.grab_any_course_by_id(course_id)
-        if course.owner_id == user_id:
+        if course.owner_id == user_id or course.status == 0:
             sections = sections_services.grab_sections_by_course(course_id)
-
+        else:
+            return templates.TemplateResponse('sections/no_access.html', {"request": request})
     elif user_role == 'student':
-        if courses_services.by_id_for_student(user_id, course_id):
+        if courses_services.by_id_for_student(user_id, course_id) or course.status == 0:
             sections = sections_services.grab_sections_by_course(course_id)
-
-    else:
-        return []
+        else:
+            return templates.TemplateResponse('sections/no_access.html', {"request": request})
 
 
     # sections_to_show = sections_services.grab_sections_by_course(course_id)
