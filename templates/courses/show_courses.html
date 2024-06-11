@@ -127,31 +127,28 @@
     </header>
     <main>
         <h1>Courses</h1>
-        {% if courses %}
-            <ul class="course-list">
-                {% for course in courses %}
-                    <li class="course-item">
-                        <a href="/sections/course/{{ course.course_id }}">
-                            <h2>{{ course.title }}</h2>
-                        </a>
-                        <p><strong>Description:</strong> {{ course.description }}</p>
-    <!--                    <p><strong>Objectives:</strong> {{ course.objectives }}</p>-->
-                        <p><strong>Tags:</strong> {{ course.tags }}</p>
-    <!--                    <p><strong>Teacher:</strong> {{ course.owner_name }}</p>-->
-                    </li>
-                {% endfor %}
-            </ul>
-            <div class="pagination-links">
-                {% if custom_page.previous_page != "This is the first page" %}
-                    <a href="{{ custom_page.previous_page }}">Previous</a>
-                {% endif %}
-                {% if custom_page.next_page != "This is the last page" %}
-                    <a href="{{ custom_page.next_page }}">Next</a>
-                {% endif %}
-            </div>
-        {% else %}
-            <p>You have no courses available.</p>
-        {% endif %}
+        <ul class="course-list">
+            {% for course in courses %}
+                <li class="course-item">
+                    <a href="/sections/course/{{ course.course_id }}">
+                        <h2>{{ course.title }}</h2>
+                    </a>
+                    <p><strong>Description:</strong> {{ course.description }}</p>
+<!--                    <p><strong>Objectives:</strong> {{ course.objectives }}</p>-->
+                    <p><strong>Tags:</strong> {{ course.tags }}</p>
+                    <p><strong>Status:</strong> {% if course.status == 1 %}Private{% else %}Public{% endif %}</p>
+<!--                    <p><strong>Teacher:</strong> {{ course.owner_name }}</p>-->
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="pagination-links">
+            {% if custom_page.previous_page != "This is the first page" %}
+                <a href="{{ custom_page.previous_page }}">Previous</a>
+            {% endif %}
+            {% if custom_page.next_page != "This is the last page" %}
+                <a href="{{ custom_page.next_page }}">Next</a>
+            {% endif %}
+        </div>
     </main>
     <footer>
         <p>&copy; 2024 My App</p>

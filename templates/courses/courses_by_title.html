@@ -171,7 +171,7 @@
         {% endif %}
         {% if courses %}
             {% for course in courses %}
-                <a class="course-button" href="/courses/id/{{ course.course_id }}">
+                <a class="course-button" href="/sections/course/{{ course.course_id }}">
                     <h3>{{ course.title }}</h3>
                     <p class="course-description">{{ course.description }}</p>
                 </a>

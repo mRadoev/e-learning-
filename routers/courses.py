@@ -12,12 +12,7 @@ templates = Jinja2Templates(directory="templates")
 courses_router = APIRouter(prefix='/courses')
 
 
-# Teachers can access all courses they own (only?)
-# Students can only view public courses and premium courses that they have access to(CourseHasUsers table)
-# Guests can only view public courses
-
-
-@courses_router.get('/', response_class=HTMLResponse)  #TESTED
+@courses_router.get('/', response_class=HTMLResponse, tags=["Courses"])  #TESTED
 def show_courses(request: Request, params: CustomParams = Depends()):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -49,8 +44,7 @@ def show_courses(request: Request, params: CustomParams = Depends()):
                                        "custom_page": custom_page})
 
 
-# Only available to logged users
-@courses_router.get('/id/{course_id}', response_class=HTMLResponse)
+@courses_router.get('/id/{course_id}', response_class=HTMLResponse, tags=["Courses"])
 def show_course_details(request: Request, course_id: int):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -79,20 +73,19 @@ def show_course_details(request: Request, course_id: int):
 
     if course_details:
         sections_to_show = sections_services.grab_sections_by_course(course_id)
-        return templates.TemplateResponse("courses/course_details.html", {"request": request, "course": course_details, "sections": sections_to_show})
+        return templates.TemplateResponse("courses/course_details.html",
+                                          {"request": request, "course": course_details, "sections": sections_to_show})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
 
 
-# Only available to logged users
-
-@courses_router.get('/any')
+@courses_router.get('/any', tags=["Courses"])
 def experiment(data: dict):
     course_id = data.get('course_id')
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title/')  #TESTED
+@courses_router.get('/title/', tags=["Courses"])  #TESTED
 def show_courses_by_title(request: Request, search: str = None):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -122,13 +115,9 @@ def show_courses_by_title(request: Request, search: str = None):
 
     return templates.TemplateResponse("courses/courses_by_title.html",
                                       {"request": request, "course_title": course_title, "courses": courses_to_show})
-    #
-    # courses = courses_services.grab_any_course_by_title(title.get('title'), user_id, user_role)
-    # return courses
 
 
-# Available to guests
-@courses_router.get('/tag')  #To be implemented!
+@courses_router.get('/tag', tags=["Courses"])  #To be implemented!
 def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
@@ -158,17 +147,17 @@ def show_courses_by_tag(request: Request, search: str = None, x_token: str = Hea
                                       {"request": request, "tag": tag, "courses": courses_to_show})
 
 
-# Available to guests
-@courses_router.get('/rating/{rating}')
+@courses_router.get('/rating/{rating}', tags=["Courses"])
 def show_courses_by_rating(rating, x_token: str = Header()):
     pass
 
-@courses_router.get("/create_form", response_class=HTMLResponse)           #TESTED
+
+@courses_router.get("/create_form", response_class=HTMLResponse, tags=["Courses"])  #TESTED
 async def get_course_form(request: Request):
     return templates.TemplateResponse("courses/create_course.html", {"request": request})
 
 
-@courses_router.post('/create', response_class=HTMLResponse)
+@courses_router.post('/create', response_class=HTMLResponse, tags=["Courses"])
 async def create_course(request: Request, course_data: Course = None):
     if course_data:  # If course_data is provided as JSON data
         title = course_data.title
@@ -229,7 +218,7 @@ async def create_course(request: Request, course_data: Course = None):
 
 # Admins can remove access to courses for students(CourseHasUsers)
 # Students must be able to unsubscribe from premium courses
-@courses_router.put('/update/id/{course_id}')
+@courses_router.put('/update/id/{course_id}', tags=["Courses"])
 def update_course(data: dict, course_id: int, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     if data.get('course_id'):
@@ -246,17 +235,25 @@ def update_course(data: dict, course_id: int, x_token: str = Header()):
     return "Course updated successfully!"
 
 
-@courses_router.get("/enrollment_form", response_class=HTMLResponse)  #TESTED
+@courses_router.get("/enrollment_form", response_class=HTMLResponse, tags=["Courses"])  #TESTED
 async def get_enrollment_form(request: Request):
     return templates.TemplateResponse("courses/enrollment_form.html", {"request": request})
 
 
-# (only?)Students can enroll in up to 5 premium courses and unlimited public courses
-# Teachers should be able to approve enrollment requests and could be notified by email about the request
-@courses_router.post("/enroll/id/{course_id}")  #Make it to title, searching for title in enrollment form
-def enroll_in_course(request: Request, course_id: int):
-    cookie_value = request.cookies.get('jwt_token')
-    x_token = cookie_value
+# @courses_router.post("/enroll/id/{course_id}")  #Make it to title, searching for title in enrollment form
+# def enroll_in_course(request: Request, course_id: int):
+#     cookie_value = request.cookies.get('jwt_token')
+#     x_token = cookie_value
+#     user = get_user_or_raise_401(x_token)
+#     if user.role != "student":
+#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can send enrollment requests.")
+#
+#     courses_services.check_premium_limit_reached(user.user_id)
+#     result = courses_services.send_enrollment_request(user.user_id, course_id)
+#     return result
+
+@courses_router.post("/enroll/id/{course_id}", tags=["swagger_presentation"])
+def enroll_in_course(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students can send enrollment requests.")
@@ -266,7 +263,7 @@ def enroll_in_course(request: Request, course_id: int):
     return result
 
 
-@courses_router.get("/requests")
+@courses_router.get("/requests", tags=["swagger_presentation"])
 def show_requests(x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "teacher":
@@ -278,7 +275,7 @@ def show_requests(x_token: str = Header(...)):
     return "You have no pending requests!"
 
 
-@courses_router.post("/requests/{response}")
+@courses_router.post("/requests/{response}", tags=["swagger_presentation"])
 def respond_request(data: Email, response: str = "approve" or "reject", x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "teacher":
@@ -305,7 +302,7 @@ def respond_request(data: Email, response: str = "approve" or "reject", x_token:
             " {course title}")
 
 
-@courses_router.post("/unsubscribe/id/{course_id}")  #Make by title
+@courses_router.post("/unsubscribe/id/{course_id}", tags=["Courses"])  #Make by title
 def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":
@@ -315,7 +312,7 @@ def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...))
     return result
 
 
-@courses_router.get("/id/{course_id}/users", response_class=HTMLResponse)
+@courses_router.get("/id/{course_id}/users", response_class=HTMLResponse, tags=["Courses"])
 def get_users_from_course(request: Request, course_id: int, params: CustomParams = Depends(), x_token: str = Header()):
     base_url = str(request.base_url)
     user = get_user_or_raise_401(x_token)
@@ -349,7 +346,7 @@ def get_users_from_course(request: Request, course_id: int, params: CustomParams
     })
 
 
-@courses_router.get("/report/id/{course_id}")
+@courses_router.get("/report/id/{course_id}", tags=["Courses"])
 def generate_report(course_id: int, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     course = courses_services.grab_any_course_by_id(course_id)

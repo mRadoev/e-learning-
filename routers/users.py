@@ -1,20 +1,17 @@
-import httpx
-from fastapi import APIRouter, Response, HTTPException, Header, Request, Form, Cookie
+from fastapi import APIRouter, Response, HTTPException, Header, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from common.auth import get_user_or_raise_401
 from base64 import b64encode
-from data.models import User, LoginData
 from services import users_services, courses_services
-from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token, try_login, find_by_id
+from services.users_services import is_authenticated, give_user_info, find_by_email, email_exists, create, create_token,try_login
 
 #Initial functionality, viewing all users not mandatory, but helpful for testing purposes
 users_router = APIRouter(prefix='/users')
 templates = Jinja2Templates(directory="templates")
 
 
-
-@users_router.get('/id/{user_id}', response_class=HTMLResponse)         #TO BE IMPLEMENTED??
+@users_router.get('/id/{user_id}', response_class=HTMLResponse, tags=["Users"])  #TO BE IMPLEMENTED??
 def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
     if is_authenticated(x_token):
         user_info = give_user_info(user_id)
@@ -22,11 +19,13 @@ def show_user_by_id(request: Request, user_id: int, x_token: str = Header()):
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-@users_router.get("/profile_search_form", response_class=HTMLResponse)          #TESTED
+
+@users_router.get("/profile_search_form", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def profile_search_form(request: Request):
     return templates.TemplateResponse("users/profile_search_form.html", {"request": request})
 
-@users_router.get('/profile/{user_email}', response_class=HTMLResponse)
+
+@users_router.get('/profile/{user_email}', response_class=HTMLResponse, tags=["Users"])
 def show_user_by_email(request: Request, user_email: str):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -51,11 +50,12 @@ def show_user_by_email(request: Request, user_email: str):
 
 #Guests must be able to register
 #Admins could authorize teachers' registrations(via email)
-@users_router.get("/registration_form", response_class=HTMLResponse)            #TESTED
+@users_router.get("/registration_form", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def get_register_form(request: Request):
     return templates.TemplateResponse("users/register.html", {"request": request})
 
-@users_router.post("/register", response_class=HTMLResponse)            #TESTED
+
+@users_router.post("/register", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def register(request: Request):
     form = await request.form()
 
@@ -74,12 +74,13 @@ async def register(request: Request):
     else:
         raise HTTPException(status_code=500, detail="Failed to register user")
 
-@users_router.get("/login_form", response_class=HTMLResponse)           #TESTED
+
+@users_router.get("/login_form", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def get_login_form(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request})
 
 
-@users_router.post('/login', response_class=HTMLResponse)           #TESTED
+@users_router.post('/login', response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def login(request: Request, email: str = Form(...), password: str = Form(...)):
     user = try_login(email, password)
     requests = None
@@ -98,12 +99,12 @@ async def login(request: Request, email: str = Form(...), password: str = Form(.
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
-@users_router.get("/logout_form", response_class=HTMLResponse)          #TESTED
+@users_router.get("/logout_form", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def get_logout_form(request: Request):
     return templates.TemplateResponse("users/logout.html", {"request": request})
 
 
-@users_router.post('/logout')           #TO FIX
+@users_router.post('/logout', tags=["Users"])  #TO FIX
 async def logout(request: Request, response: Response):
     cookie_value = request.cookies.get('jwt_token')
     jwt_token = cookie_value
@@ -113,11 +114,13 @@ async def logout(request: Request, response: Response):
     else:
         raise HTTPException(status_code=401, detail="JWT token not found in cookies")
 
-@users_router.get("/acc_update", response_class=HTMLResponse)          #TESTED
+
+@users_router.get("/acc_update", response_class=HTMLResponse, tags=["Users"])  #TESTED
 async def get_acc_update_form(request: Request):
     return templates.TemplateResponse("users/acc_update_form.html", {"request": request})
 
-@users_router.put('/account', response_class=HTMLResponse)          #TO FIX
+
+@users_router.put('/account', response_class=HTMLResponse, tags=["Users"])  #TO FIX
 def update_user(request: Request, data: dict):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -132,7 +135,7 @@ def update_user(request: Request, data: dict):
     return templates.TemplateResponse('users/acc_update_success.html', {"request": request})
 
 
-@users_router.get('/courses')           #TO FIX ERRORS
+@users_router.get('/courses', tags=["Users"])  #TO FIX ERRORS
 def check_user_related_courses(request: Request, data: dict):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -151,8 +154,5 @@ def check_user_related_courses(request: Request, data: dict):
         courses = users_services.show_teacher_courses(student_teacher.user_id)
         return courses
 
-
-
 #Students can edit everything about their account information except their email (I assume they can't edit their id)
 #Teachers can edit everything about their account information except their names (I assume they can't edit their id)
-
