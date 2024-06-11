@@ -143,7 +143,7 @@ def by_title_for_student(section_title: str, user_id: int):
                         JOIN students_has_courses sc ON sc.course_id = c.course_id 
                         WHERE s.title LIKE '%{section_title}%' AND c.status = 1 AND sc.user_id = {user_id};''')
     sections = [Section.from_query_result(*row) for row in data]
-    return [section.to_student_dict() for section in sections]
+    return [section.to_user_dict() for section in sections]
 
 
 def by_title_for_teacher(section_title: str, user_id: int):
@@ -160,7 +160,7 @@ def by_title_for_teacher(section_title: str, user_id: int):
                         WHERE s.title LIKE '%{section_title}%' 
                         AND c.status = 1 AND c.owner_id = {user_id};''')
     sections = [Section.from_query_result(*row) for row in data]
-    return [section.to_teacher_dict() for section in sections]
+    return [section.to_user_dict() for section in sections]
 
 
 def by_title_for_admin(section_title: str):

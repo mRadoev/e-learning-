@@ -91,10 +91,8 @@ class Course(BaseModel):
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
 
-    def to_student_dict(self):
-        return self.dict(include={'course_id', 'title', 'description', 'objectives', 'owner_id', 'tags'})
 
-    def to_teacher_dict(self):
+    def to_user_dict(self):
         return self.dict(
             include={'course_id', 'title', 'description', 'objectives', 'owner_id', 'tags', 'status'})
 

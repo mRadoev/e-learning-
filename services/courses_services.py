@@ -23,7 +23,7 @@ def student_view(user_id: int):
                         WHERE c.status = 1 AND sc.user_id = {user_id}
                         ORDER BY course_id;''')
     courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_student_dict() for course in courses]
+    return [course.to_user_dict() for course in courses]
 
 
 def teacher_view(user_id: int):
@@ -32,7 +32,7 @@ def teacher_view(user_id: int):
                         WHERE c.status = 0
                         OR c.owner_id = {user_id}''')
     courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_teacher_dict() for course in courses]
+    return [course.to_user_dict() for course in courses]
 
 
 def admin_view():
@@ -108,7 +108,7 @@ def by_title_for_student(course_title: str, user_id: int):
                         JOIN students_has_courses sc ON sc.course_id = c.course_id 
                         WHERE c.title LIKE '%{course_title}%' AND c.status = 1 AND sc.user_id = {user_id};''')
     courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_student_dict() for course in courses]
+    return [course.to_user_dict() for course in courses]
 
 
 def by_title_for_teacher(section_title: str, user_id: int):
@@ -126,7 +126,7 @@ def by_title_for_teacher(section_title: str, user_id: int):
                         WHERE s.title LIKE '%{section_title}%' 
                         AND c.status = 1 AND c.owner_id = {user_id};''')
     sections = [Course.from_query_result(*row) for row in data]
-    return [section.to_teacher_dict() for section in sections]
+    return [section.to_user_dict() for section in sections]
 
 
 def by_title_for_admin(course_title: str):
@@ -155,7 +155,7 @@ def by_tag_for_student(tag: str, student_id: int):
                         JOIN students_has_courses sc ON sc.course_id = c.course_id
                         WHERE c.tags LIKE "%{tag}%" AND c.status = 1 AND sc.user_id = {student_id}''')
     courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_student_dict() for course in courses]
+    return [course.to_user_dict() for course in courses]
 
 
 def by_tag_for_teacher(tag: str, teacher_id: int):
@@ -167,7 +167,7 @@ def by_tag_for_teacher(tag: str, teacher_id: int):
                         FROM courses c
                         WHERE c.tags LIKE "%{tag}%" AND c.status = 1 AND c.owner_id = {teacher_id}''')
     courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_teacher_dict() for course in courses]
+    return [course.to_user_dict() for course in courses]
 
 
 def by_tag_for_admin(tag: str):

@@ -296,10 +296,8 @@ def respond_request(data: Email, response: str = "approve" or "reject", x_token:
 
     emails = courses_services.show_pending_requests(user.user_id)
     if emails:
-        return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"
-                " {course title}"), emails
-    return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"
-            " {course title}")
+        return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}"), emails
+    return (f"Student with ID #{data.sender_id} has been {answer} for course with ID #{data.course_id}")
 
 
 @courses_router.post("/unsubscribe/id/{course_id}", tags=["Courses"])  #Make by title
