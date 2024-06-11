@@ -116,15 +116,14 @@
         }
     </style>
 </head>
-<body>
-    <div class="btn-container">
+<div class="btn-container">
         <a href="/users/registration_form" class="btn" id="registerBtn">Register</a>
         <a href="/users/login_form" class="btn" id="loginBtn">Login</a>
         <a href="/users/profile_search_form" class="btn">Search Users</a>
         <a href="/courses" class="btn">All Courses</a>
         <a href="/courses/title" class="btn">Search Courses</a>
-        <a href="/courses/enrollment_form" class="btn">Enroll</a>
         <a href="/courses/create_form" class="btn" id="createCourseBtn">Create Course</a>
+        <a href="/courses/enrollment_form" class="btn" id="enrollBtn">Enroll</a>
     </div>
     <div class="container">
         <h1>E-Learning Platform</h1>
@@ -151,17 +150,17 @@
                 var userRole = tokenPayload.role;
 
                 var createCourseBtn = document.getElementById("createCourseBtn");
+                var enrollBtn = document.getElementById("enrollBtn");
                 if (userRole === "teacher") {
                     // User is a teacher, link to course creation form
-                    createCourseBtn.href = "/courses/create_form";
+                    createCourseBtn.style.display = "inline-block";
                 } else {
                     // User is not a teacher, disable button and show message
-                    createCourseBtn.removeAttribute("href");
-                    createCourseBtn.addEventListener("click", function(event) {
-                        event.preventDefault();
-                        alert("Only teachers can create courses.");
-                    });
+                    createCourseBtn.style.display = "none";
                 }
+            } else {
+                document.getElementById("createCourseBtn").style.display = "none";
+                document.getElementById("enrollBtn").style.display = "none";
             }
         });
 
