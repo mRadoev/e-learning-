@@ -48,7 +48,7 @@ class Role:
     STUDENT = 'student'
     GUEST = 'guest'
 
-#Verify if this User class is looking like it should
+
 class User(BaseModel):
     user_id: int | None = None
     role: str = Field(..., pattern=r'^(admin|teacher|student|guest)$')
@@ -87,8 +87,6 @@ class Course(BaseModel):
     objectives: str
     tags: str
     status: int = 0  # 0 = public, 1 = premium
-
-    # student_rating: int | str = None  # The average of the sum of each student who gave the course a rating
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
@@ -178,27 +176,3 @@ class Email(BaseModel):
     def from_query_result(cls, email_id, sender_id, recipient_id, course_id, response):
         return cls(email_id=email_id, sender_id=sender_id,
                    recipient_id=recipient_id, course_id=course_id, response=response)
-
-        # class Student:
-
-# class Teacher:
-
-
-# class Message(BaseModel):
-#     message_id: int | None = None
-#     sender_email: str
-#     recipient_email: str
-#     message_text: str
-#
-#     @classmethod
-#     def from_query_result(cls, message_id, sender_email, recipient_email, message_text):
-#         return cls(
-#             message_id=message_id,
-#             sender_email=sender_email,
-#             recipient_email=recipient_email,
-#             message_text=message_text)
-#
-#
-# class MessagePayload(BaseModel):
-#     recipient_email: str
-#     message_text: str

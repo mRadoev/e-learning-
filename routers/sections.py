@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 #Guests cannot view sections
 #Pagination for sorting sections by id or name TO DO !!!
 #Remove content from shown topic parameters, show only when looking for specific topic(submenu)
-@sections_router.get('/')           #TESTED
+@sections_router.get('/', tags=["Sections"])  #TESTED
 def show_sections(request: Request):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -42,17 +42,17 @@ def show_sections(request: Request):
 
 #Content can be made not visible, because it's supposed to be long text, so instead by searching
 #for the section by id or name you can view the full content of the section.
-@sections_router.get('/id/{section_id}')
+@sections_router.get('/id/{section_id}', tags=["Sections"])
 def show_section_by_id(section_id, x_token: str = Header()):
     pass
 
 
-@sections_router.get('/title/{section_title}', response_model=CustomPage)       #TO DO
+@sections_router.get('/title/{section_title}', response_model=CustomPage, tags=["Sections"])  #TO DO
 def show_section_by_title(
-    section_title: str,
-    request: Request,
-    params: CustomParams = Depends(),
-    x_token: Optional[str] = Header(None)
+        section_title: str,
+        request: Request,
+        params: CustomParams = Depends(),
+        x_token: Optional[str] = Header(None)
 ):
     base_url = str(request.base_url)
     user_role = None
@@ -86,7 +86,7 @@ def show_section_by_title(
     return custom_page
 
 
-@sections_router.get('/course/{course_id}', response_model=CustomPage)
+@sections_router.get('/course/{course_id}', response_model=CustomPage, tags=["Sections"])
 def show_sections_by_course(
         course_id: int,
         request: Request,
@@ -114,9 +114,11 @@ def show_sections_by_course(
         if courses_services.by_id_for_student(user_id, course_id):
             sections = sections_services.grab_sections_by_course(course_id)
 
+    elif user_role == 'admin':
+        sections = sections_services.grab_sections_by_course(course_id)
+
     else:
         return []
-
 
     # sections_to_show = sections_services.grab_sections_by_course(course_id)
 
@@ -129,9 +131,12 @@ def show_sections_by_course(
     custom_page.previous_page = f"{base_url}sections/course/{course_id}?page={previous_int}" if previous_int else None
     custom_page.next_page = f"{base_url}sections/course/{course_id}?page={next_int}" if next_int else None
 
-    return templates.TemplateResponse("sections/sections_by_course.html", {"request": request, "sections": paginated_sections.items, "previous_page": custom_page.previous_page, "next_page": custom_page.next_page})
+    return templates.TemplateResponse("sections/sections_by_course.html",
+                                      {"request": request, "sections": paginated_sections.items,
+                                       "previous_page": custom_page.previous_page, "next_page": custom_page.next_page})
 
-@sections_router.get('/content/{section_id}', response_model=CustomPage)
+
+@sections_router.get('/content/{section_id}', response_model=CustomPage, tags=["Sections"])
 def show_content_by_section(
         section_id: int,
         request: Request,
@@ -142,11 +147,13 @@ def show_content_by_section(
 
     if not section_content:
         raise HTTPException(status_code=404, detail="Section not found")
-    return templates.TemplateResponse("sections/section_content.html", {"request": request, "section_content": section_content, "section_title": section_title})
+    return templates.TemplateResponse("sections/section_content.html",
+                                      {"request": request, "section_content": section_content,
+                                       "section_title": section_title})
 
 
 #Only teachers that own the course can create new sections for it and update it
-@sections_router.post('/new')
+@sections_router.post('/new', tags=["Sections"])
 def create_section(section_data: Section, x_token: str = Header(None)):
     if x_token is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in first!")
@@ -164,7 +171,7 @@ def create_section(section_data: Section, x_token: str = Header(None)):
     return "New section created successfully!", new_section
 
 
-@sections_router.put('/update/id/{section_id}')
+@sections_router.put('/update/id/{section_id}', tags=["Sections"])
 def update_section(data: dict, section_id, x_token: str = Header()):
     user = get_user_or_raise_401(x_token)
     if data.get('section_id'):
@@ -174,13 +181,14 @@ def update_section(data: dict, section_id, x_token: str = Header()):
     course = courses_services.grab_any_course_by_id(section.course_id)
 
     if user.role != "teacher" or course.owner_id != user.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only teachers that own the course can update its sections!")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only teachers that own the course can update its sections!")
 
     sections_services.update_section(data, section_id)
 
     return "Section updated successfully!"
 
 
-@sections_router.get('/any/{section_id}')
+@sections_router.get('/any/{section_id}', tags=["Sections"])
 def experiment(section_id):
     sections_services.grab_any_section_by_id(section_id)

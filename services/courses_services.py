@@ -1,8 +1,6 @@
 import datetime
-
 from data.database import read_query, insert_query, delete_query, update_query
 from data.models import Course, Email, User  # CourseHasUsers
-from services.users_services import decode_token
 from common import auth
 from fastapi import HTTPException, status, Header
 

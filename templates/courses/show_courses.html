@@ -136,6 +136,7 @@
                     <p><strong>Description:</strong> {{ course.description }}</p>
 <!--                    <p><strong>Objectives:</strong> {{ course.objectives }}</p>-->
                     <p><strong>Tags:</strong> {{ course.tags }}</p>
+                    <p><strong>Status:</strong> {% if course.status == 1 %}Private{% else %}Public{% endif %}</p>
 <!--                    <p><strong>Teacher:</strong> {{ course.owner_name }}</p>-->
                 </li>
             {% endfor %}
