@@ -74,6 +74,7 @@ class User(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+
 class Student(BaseModel):
     user_id: int
     photo: Optional[str] = None
@@ -90,7 +91,6 @@ class Course(BaseModel):
 
     def to_guest_dict(self):
         return self.dict(include={'course_id', 'title', 'description', 'tags', 'student_rating'})
-
 
     def to_user_dict(self):
         return self.dict(

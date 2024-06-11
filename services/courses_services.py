@@ -63,7 +63,7 @@ def by_id_for_non_guest(course_id):
                         FROM courses c
                         WHERE c.status = 0 AND c.course_id = {course_id};''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
-    return shown_course.to_student_dict()
+    return shown_course.to_user_dict()
 
 
 def by_id_for_student(student_id, course_id):
@@ -76,7 +76,7 @@ def by_id_for_student(student_id, course_id):
                         FROM courses c
                         WHERE c.status = 0 AND c.course_id = {course_id}''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
-    return shown_course.to_student_dict()
+    return shown_course.to_user_dict()
 
 
 def by_id_for_teacher(teacher_id, course_id):
@@ -85,7 +85,7 @@ def by_id_for_teacher(teacher_id, course_id):
                         WHERE (c.owner_id = {teacher_id} AND c.course_id = {course_id})
                         OR (c.status = 0 AND c.course_id = {course_id})''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
-    return shown_course.to_teacher_dict()
+    return shown_course.to_user_dict()
 
 
 def by_title_for_guest(course_title: str):
