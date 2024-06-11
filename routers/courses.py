@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from data.models import Course, Role, Email, CustomParams, CustomPage
 from common.auth import get_user_or_raise_401
 from typing import Optional
-from services import courses_services
+from services import courses_services, sections_services
 from fastapi_pagination import Page, Params, paginate
 from services.users_services import decode_token
 from fastapi_pagination.utils import disable_installed_extensions_check
@@ -19,7 +19,7 @@ courses_router = APIRouter(prefix='/courses')
 # Guests can only view public courses
 
 
-@courses_router.get('/', response_class=HTMLResponse)       #TESTED
+@courses_router.get('/', response_class=HTMLResponse)  #TESTED
 def show_courses(request: Request, params: CustomParams = Depends()):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -51,12 +51,13 @@ def show_courses(request: Request, params: CustomParams = Depends()):
                                        "custom_page": custom_page})
 
 
-
 # Only available to logged users
 @courses_router.get('/id/{course_id}', response_class=HTMLResponse)
 def show_course_details(request: Request, course_id: int):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
+    logged_user = None
+
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
         user_id = logged_user.user_id
@@ -65,12 +66,25 @@ def show_course_details(request: Request, course_id: int):
         user_role = None
         user_id = None
 
-    course_details = courses_services.grab_any_course_by_id(course_id)
+    check_course = courses_services.grab_any_course_by_id(course_id)
+
+    if user_role == 'admin':
+        course_details = check_course
+    elif check_course.status == 0 and logged_user is None:
+        course_details = courses_services.by_id_for_guest(course_id)
+    elif check_course.status == 0:
+        course_details = courses_services.by_id_for_non_guest(course_id)
+    elif user_role == 'student' and check_course.status == 1:
+        course_details = courses_services.by_id_for_student(user_id, course_id)
+    elif user_role == 'teacher' and check_course.status == 1:
+        course_details = courses_services.by_id_for_teacher(user_id, course_id)
 
     if course_details:
-        return templates.TemplateResponse("courses/course_details.html", {"request": request, "course": course_details})
+        sections_to_show = sections_services.grab_sections_by_course(course_id)
+        return templates.TemplateResponse("courses/course_details.html", {"request": request, "course": course_details, "sections": sections_to_show})
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
 
 # Only available to logged users
 
@@ -80,7 +94,7 @@ def experiment(data: dict):
     return courses_services.grab_any_course_by_id(course_id)
 
 
-@courses_router.get('/title/')          #TESTED
+@courses_router.get('/title/')  #TESTED
 def show_courses_by_title(request: Request, search: str = None):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -116,7 +130,7 @@ def show_courses_by_title(request: Request, search: str = None):
 
 
 # Available to guests
-@courses_router.get('/tag')         #To be implemented!
+@courses_router.get('/tag')  #To be implemented!
 def show_courses_by_tag(request: Request, search: str = None, x_token: str = Header(None)):
     if x_token:
         logged_user = get_user_or_raise_401(x_token)
@@ -199,13 +213,14 @@ def update_course(data: dict, course_id: int, x_token: str = Header()):
     return "Course updated successfully!"
 
 
-@courses_router.get("/enrollment_form", response_class=HTMLResponse)           #TESTED
+@courses_router.get("/enrollment_form", response_class=HTMLResponse)  #TESTED
 async def get_enrollment_form(request: Request):
     return templates.TemplateResponse("courses/enrollment_form.html", {"request": request})
 
+
 # (only?)Students can enroll in up to 5 premium courses and unlimited public courses
 # Teachers should be able to approve enrollment requests and could be notified by email about the request
-@courses_router.post("/enroll/id/{course_id}")          #Make it to title, searching for title in enrollment form
+@courses_router.post("/enroll/id/{course_id}")  #Make it to title, searching for title in enrollment form
 def enroll_in_course(request: Request, course_id: int):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -257,7 +272,7 @@ def respond_request(data: Email, response: str = "approve" or "reject", x_token:
             " {course title}")
 
 
-@courses_router.post("/unsubscribe/id/{course_id}")         #Make by title
+@courses_router.post("/unsubscribe/id/{course_id}")  #Make by title
 def unsubscribe_from_course_endpoint(course_id: int, x_token: str = Header(...)):
     user = get_user_or_raise_401(x_token)
     if user.role != "student":

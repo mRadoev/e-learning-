@@ -93,6 +93,29 @@
             <p><strong>Objectives:</strong> {{ course.objectives }}</p>
             <p><strong>Tags:</strong> {{ course.tags }}</p>
         </div>
+        {% if sections is defined and sections|length > 0 %}
+            <div>
+                {% for section in sections %}
+                    <section>
+                        <h3>
+                            {{ section.title }}
+                        </h3>
+                        <p>
+                            {{ section.content }}
+                        </p>
+                        <p>
+                            {{ section.description }}
+                        </p>
+                    </section>
+                {% endfor %}
+            </div>
+
+            {% endif %}
+        {% if sections is defined and sections|length == 0 %}
+        <h3>
+            No sections for this course yet
+        </h3>
+        {% endif %}
     </main>
     <footer>
         <p>&copy; 2024 My App</p>
