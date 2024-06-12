@@ -23,13 +23,13 @@ def show_courses(request: Request, params: CustomParams = Depends()):
 
     # Retrieve courses based on user role or guest status
     if not logged_user:
-        courses = courses_services.guest_view()
+        courses = courses_services.admin_view()
     elif logged_user.role == Role.STUDENT:
-        courses = courses_services.student_view(logged_user.user_id)
+        courses = courses_services.admin_view()
     elif logged_user.role == Role.ADMIN:
         courses = courses_services.admin_view()
     elif logged_user.role == Role.TEACHER:
-        courses = courses_services.teacher_view(logged_user.user_id)
+        courses = courses_services.admin_view()
     else:
         return "There are no courses you can view!"
 

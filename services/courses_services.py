@@ -5,34 +5,34 @@ from common import auth
 from fastapi import HTTPException, status, Header
 
 
-def guest_view():
-    data = read_query('SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status '
-                      'FROM courses AS c WHERE c.status = 0')
-    courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_guest_dict() for course in courses]
-
-
-def student_view(user_id: int):
-    data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                        FROM courses c 
-                        WHERE c.status = 0
-                        UNION ALL
-                        SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status 
-                        FROM courses c
-                        JOIN students_has_courses sc ON c.course_id = sc.course_id
-                        WHERE c.status = 1 AND sc.user_id = {user_id}
-                        ORDER BY course_id;''')
-    courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_user_dict() for course in courses]
-
-
-def teacher_view(user_id: int):
-    data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
-                        FROM courses c 
-                        WHERE c.status = 0
-                        OR c.owner_id = {user_id}''')
-    courses = [Course.from_query_result(*row) for row in data]
-    return [course.to_user_dict() for course in courses]
+# def guest_view():
+#     data = read_query('SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status '
+#                       'FROM courses AS c WHERE c.status = 0')
+#     courses = [Course.from_query_result(*row) for row in data]
+#     return [course.to_guest_dict() for course in courses]
+#
+#
+# def student_view(user_id: int):
+#     data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
+#                         FROM courses c
+#                         WHERE c.status = 0
+#                         UNION ALL
+#                         SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
+#                         FROM courses c
+#                         JOIN students_has_courses sc ON c.course_id = sc.course_id
+#                         WHERE c.status = 1 AND sc.user_id = {user_id}
+#                         ORDER BY course_id;''')
+#     courses = [Course.from_query_result(*row) for row in data]
+#     return [course.to_user_dict() for course in courses]
+#
+#
+# def teacher_view(user_id: int):
+#     data = read_query(f'''SELECT c.course_id, owner_id, c.title, c.description, c.objectives, c.tags, c.status
+#                         FROM courses c
+#                         WHERE c.status = 0
+#                         OR c.owner_id = {user_id}''')
+#     courses = [Course.from_query_result(*row) for row in data]
+#     return [course.to_user_dict() for course in courses]
 
 
 def admin_view():
