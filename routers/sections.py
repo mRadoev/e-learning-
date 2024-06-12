@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 #Guests cannot view sections
 #Pagination for sorting sections by id or name TO DO !!!
 #Remove content from shown topic parameters, show only when looking for specific topic(submenu)
-@sections_router.get('/', tags=["Sections"])  #TESTED
+@sections_router.get('/', tags=["Sections"])  #TO BE DELETED
 def show_sections(request: Request):
     cookie_value = request.cookies.get('jwt_token')
     x_token = cookie_value
@@ -110,15 +110,13 @@ def show_sections_by_course(
     if user_role == 'teacher':
         if course.owner_id == user_id or course.status == 0:
             sections = sections_services.grab_sections_by_course(course_id)
-        else:
-            return templates.TemplateResponse('sections/no_access.html', {"request": request})
+
     elif user_role == 'student':
         if courses_services.by_id_for_student(user_id, course_id) or course.status == 0:
             sections = sections_services.grab_sections_by_course(course_id)
-        else:
-            return templates.TemplateResponse('sections/no_access.html', {"request": request})
 
-
+    if not sections:
+        return templates.TemplateResponse('sections/no_access.html', {"request": request})
     # sections_to_show = sections_services.grab_sections_by_course(course_id)
 
     paginated_sections = paginate(sections, params)

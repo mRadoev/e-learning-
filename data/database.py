@@ -12,6 +12,14 @@ def _get_connection() -> Connection:
         port=int(os.environ['E_LEARNING_DATABASE_PORT']),
         database=os.environ['E_LEARNING_DATABASE_NAME']
     )
+# def _get_connection() -> Connection:
+#     return connect(
+#         user="admin",
+#         password="asdASD33#!*",
+#         host="database-2.c9uy4e86ookt.us-east-1.rds.amazonaws.com",
+#         port=3306,
+#         database="e-learning"
+#     )
 
 
 def read_query(sql: str, sql_params=()):

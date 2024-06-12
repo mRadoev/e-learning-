@@ -76,7 +76,8 @@ def by_id_for_student(student_id, course_id):
                         FROM courses c
                         WHERE c.status = 0 AND c.course_id = {course_id}''')
     shown_course = next((Course.from_query_result(*row) for row in data), None)
-    return shown_course.to_user_dict()
+    if shown_course:
+        return shown_course.to_user_dict()
 
 
 def by_id_for_teacher(teacher_id, course_id):

@@ -14,23 +14,9 @@ courses_router = APIRouter(prefix='/courses')
 
 @courses_router.get('/', response_class=HTMLResponse, tags=["Courses"])  #TESTED
 def show_courses(request: Request, params: CustomParams = Depends()):
-    cookie_value = request.cookies.get('jwt_token')
-    x_token = cookie_value
-    if x_token:
-        logged_user = get_user_or_raise_401(x_token)
-    else:
-        logged_user = None
+    courses = courses_services.admin_view()
 
-    # Retrieve courses based on user role or guest status
-    if not logged_user:
-        courses = courses_services.admin_view()
-    elif logged_user.role == Role.STUDENT:
-        courses = courses_services.admin_view()
-    elif logged_user.role == Role.ADMIN:
-        courses = courses_services.admin_view()
-    elif logged_user.role == Role.TEACHER:
-        courses = courses_services.admin_view()
-    else:
+    if not courses:
         return "There are no courses you can view!"
 
     # Paginate courses
